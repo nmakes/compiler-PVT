@@ -23,9 +23,9 @@ for ele in content:
 
 terminals.remove("===>")
 print "TERMINALS"
-print terminals
+print sorted(terminals)
 print
 print "NON TERMINALS"
-print tags
+print sorted(tags)
 # print len(tags)
 # print content

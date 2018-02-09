@@ -3,19 +3,21 @@
 <stmtsAndFunctionDefs> ===> <stmtOrFunctionDef> <X1>
 <X1> ===> _epsilon_
 <X1> ===> <stmtsAndFunctionDefs>
-<stmtOrFunctionDef> ===> <stmt>ssss
+
+<stmtOrFunctionDef> ===> <stmt>
 <stmtOrFunctionDef> ===> <functionDef>
 
 <stmt> ===> <funCallStmt>
 <stmt> ===> <declarationStmt>
 <stmt> ===> <ifStmt>
-<stmt> ===> <ioStmt>ssss
+<stmt> ===> <ioStmt>
 <stmt> ===> <assignmentStmt>
 
 <functionDef> ===> FUNCTION SQO <parameter_list> SQC ASSIGNOP FUNID SQO <parameter_list> SQC <stmtsAndFunctionDefs> END
 
 <parameter_list> ===> _epsilon_
 <parameter_list> ===> <type> ID <other_params>
+
 <other_params> ===> _epsilon_
 <other_params> ===> COMMA <type> ID <other_params>
 
@@ -25,58 +27,88 @@
 <type> ===> MATRIX
 
 <funCallStmt> ===> <functionCall> SEMICOLON
+
 <functionCall> ===> FUNID OP <id_list> CL
 
 <declarationStmt> ===> <type> <id_list> SEMICOLON
 
-<ifStmt> ===> IF OP <booleanExpression> CL <stmtsAndFunctionDefs> ENDIF
-<ifStmt> ===> IF OP <booleanExpression> CL <stmtsAndFunctionDefs> ELSE <stmtsAndFunctionDefs> ENDIF
+<ifStmt> ===> IF OP <booleanExpression> CL <stmtsAndFunctionDefs> <X2>
+
+<X2> ===> ENDIF
+<X2> ===> ELSE <stmtsAndFunctionDefs> ENDIF
 
 <ioStmt> ===> READ OP ID CL SEMICOLON
 <ioStmt> ===> PRINT OP ID CL SEMICOLON
 
 <assignmentStmt> ===> <leftHandSide> ASSIGNOP <rightHandSide> SEMICOLON
+
 <leftHandSide> ===> ID
 <leftHandSide> ===> SQO <id_list> SQC
+
 <rightHandSide> ===> <arithmeticExpression>
 <rightHandSide> ===> <functionCall>
 <rightHandSide> ===> <matrixExpression>
 <rightHandSide> ===> <stringExpression>
-<id_list> ===> ID
-<id_list> ===> ID COMMA <id_list>
+
+<id_list> ===> ID <X3>
+
+<X3> ===> _epsilon_
+<X3> ===> COMMA <id_list>
 
 <matrix> ===> SQO <rowlist> SQC
-<rowlist> ===> <numlist>
-<rowlist> ===> <numlist> SEMICOLON <rowlist>
-<numlist> ===> NUM
-<numlist> ===> NUM COMMA <numlist>
 
-<stringExpression> ===> <str_or_id>
-<stringExpression> ===> <str_or_id> PLUS <stringExpression>
+<rowlist> ===> <numlist> <X4>
+
+<X4> ===> _epsilon_
+<X4> ===> SEMICOLON <rowlist>
+
+<numlist> ===> NUM <X5>
+
+<X5> ===> _epsilon_
+<X5> ===> COMMA <numlist>
+
+<stringExpression> ===> <str_or_id> <X6>
+
+<X6> ===> _epsilon_
+<X6> ===> PLUS <stringExpression>
+
 <str_or_id> ===> STR 
 <str_or_id> ===> ID
 
 <matrix_or_id> ===> <matrix>
 <matrix_or_id> ===> ID
-<matrixExpression> ===> <matrix_or_id>
-<matrixExpression> ===> <matrix_or_id> <mat_op> <matrixExpression>
+
+<matrixExpression> ===> <matrix_or_id> <X7>
+
+<X7> ===> _epsilon_
+<X7> ===> <mat_op> <matrixExpression>
+
 <mat_op> ===> PLUS
 <mat_op> ===> MINUS
 
-<arithmeticExpression> ===> <term>
-<arithmeticExpression> ===> <term> <term_op> <arithmeticExpression>
+<arithmeticExpression> ===> <term> <X8>
+
+<X8> ===> _epsilon_
+<X8> ===> <term_op> <arithmeticExpression>
+
 <term_op> ===> MINUS
 <term_op> ===> PLUS
-<term> ===> <factor>
-<term> ===> <factor> <factor_op> <term>
+
+<term> ===> <factor> <X9>
+
+<X9> ===> _epsilon_
+<X9> ===> <factor_op> <term>
+
 <factor_op> ===> MUL
 <factor_op> ===> DIV
+
 <factor> ===> <aVar>
 <factor> ===> OP <arithmeticExpression> CL
 
 <booleanExpression> ===> OP <booleanExpression> CL <binLogicalOp> OP <booleanExpression> CL
 <booleanExpression> ===> NOT OP <booleanExpression> CL
 <booleanExpression> ===> <var> <relationalOp> <var>
+
 <binLogicalOp> ===> AND
 <binLogicalOp> ===> OR
 
@@ -88,10 +120,12 @@
 <relationalOp> ===> NE
 
 <matrixElement> ===> ID SQO NUM COMMA NUM SQC
+
 <var> ===> ID
 <var> ===> NUM
 <var> ===> RNUM
 <var> ===> <matrixElement>
+
 <aVar> ===> <var>
 <aVar> ===> <functionCall>
 <aVar> ===> SIZE ID
