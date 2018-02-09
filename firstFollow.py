@@ -134,6 +134,9 @@ def follow(X, rules, terminals, nonterminals):
         (I,J) = loc
         rule = rules[I]
 
+        flagBroken = False
+        parentFollow = []
+
         for nexts in range(J+1, len(rule)):
             token = rule[nexts]
             subfirst = first(token, rules, terminals, nonterminals)
@@ -143,10 +146,26 @@ def follow(X, rules, terminals, nonterminals):
                 continue
             else:
                 FOLLOW = merge(FOLLOW, subfirst)
+                flagBroken = True
                 break
+
+        # picking the follow of the parents that derived X
+
+        if flagBroken!=True: # Epsilon was found till the last token in the rule
+
+            if X!= rule[0]:
+                print rule[0]
+                print X
+                parentFollow = follow(rule[0], rules, terminals, nonterminals)
+                
+            FOLLOW = merge(FOLLOW, parentFollow)
+    
 
     FOLLOWset = set(FOLLOW)
     FOLLOW = sorted(list(FOLLOWset))
+
+    if eps in FOLLOW:
+        FOLLOW.remove(eps)
 
     return FOLLOW
 
@@ -156,7 +175,7 @@ def print_rules(rules):
         print i, r
 
 
-print follow("<stmt>", rules, terminals, nonterminals)
+print follow("ID", rules, terminals, nonterminals)
 
 
 print "GRAMMAR"
