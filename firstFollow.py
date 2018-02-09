@@ -125,7 +125,39 @@ def follow(X, rules, terminals, nonterminals):
 
             continue
 
-    print locations
+    # print locations
+
+    FOLLOW = []
+
+    for loc in locations:
+        
+        (I,J) = loc
+        rule = rules[I]
+
+        for nexts in range(J+1, len(rule)):
+            token = rule[nexts]
+            subfirst = first(token, rules, terminals, nonterminals)
+
+            if eps in subfirst:
+                FOLLOW = merge(FOLLOW, subfirst)
+                continue
+            else:
+                FOLLOW = merge(FOLLOW, subfirst)
+                break
+
+    FOLLOWset = set(FOLLOW)
+    FOLLOW = sorted(list(FOLLOWset))
+
+    return FOLLOW
 
 
-follow("ASSIGNOP", rules, terminals, nonterminals)
+def print_rules(rules):
+    for (i,r) in enumerate(rules):
+        print i, r
+
+
+print follow("<stmt>", rules, terminals, nonterminals)
+
+
+print "GRAMMAR"
+print 
