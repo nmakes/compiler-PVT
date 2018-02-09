@@ -89,7 +89,7 @@ def first(X, rules, terminals, nonterminals):
 def printFirst(rules, terminals, nonterminals):
     for nt in sorted(nonterminals):
         
-        print nt, ":", 
+        print nt, ": {", 
         
         firsts = first(nt, rules, terminals, nonterminals)
         i = 0
@@ -102,7 +102,7 @@ def printFirst(rules, terminals, nonterminals):
                 print f, ",",
             i += 1
 
-        print
+        print "}"
 
 
 def follow(X, rules, terminals, nonterminals):
@@ -151,14 +151,14 @@ def follow(X, rules, terminals, nonterminals):
 
         # picking the follow of the parents that derived X
 
-        if flagBroken!=True: # Epsilon was found till the last token in the rule
+        # if flagBroken!=True: # Epsilon was found till the last token in the rule
 
-            if X!= rule[0]:
-                print rule[0]
-                print X
-                parentFollow = follow(rule[0], rules, terminals, nonterminals)
-                
-            FOLLOW = merge(FOLLOW, parentFollow)
+        #     if X!= rule[0]:
+        #         print rule[0]
+        #         print X
+        #         parentFollow = follow(rule[0], rules, terminals, nonterminals)
+
+        #     FOLLOW = merge(FOLLOW, parentFollow)
     
 
     FOLLOWset = set(FOLLOW)
@@ -170,13 +170,45 @@ def follow(X, rules, terminals, nonterminals):
     return FOLLOW
 
 
+def printFollow(rules, terminals, nonterminals):
+
+    for nt in sorted(nonterminals):
+        
+        print nt, ": {", 
+        
+        follows = follow(nt, rules, terminals, nonterminals)
+        i = 0
+        l = len(follows)
+
+        for f in follows:
+            if i==l-1:
+                print f,
+            else:
+                print f, ",",
+            i += 1
+
+        print "}"
+
+
+print follow("CL", rules, terminals, nonterminals)
+
 def print_rules(rules):
     for (i,r) in enumerate(rules):
-        print i, r
+        print str(i+1) + ".",
+        for item in r:
+            print item,
+        print
 
+print "GRAMMAR RULES"
+print
+print_rules(rules)
+print
+print "FIRST SETS"
+print
+printFirst(rules, terminals, nonterminals)
+print
+print "FOLLOW SETS"
+print
+printFollow(rules, terminals, nonterminals)
+# print follow("ID", rules, terminals, nonterminals)
 
-print follow("ID", rules, terminals, nonterminals)
-
-
-print "GRAMMAR"
-print 
