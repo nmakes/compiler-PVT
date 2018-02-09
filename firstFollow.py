@@ -85,22 +85,24 @@ def first(X, rules, terminals, nonterminals):
         # print
         return FIRSTS
 
-for nt in sorted(nonterminals):
-    
-    print nt, ":", 
-    
-    firsts = first(nt, rules, terminals, nonterminals)
-    i = 0
-    l = len(firsts)
 
-    for f in firsts:
-        if i==l-1:
-            print f,
-        else:
-            print f, ",",
-        i += 1
+def printFirst(rules, terminals, nonterminals):
+    for nt in sorted(nonterminals):
+        
+        print nt, ":", 
+        
+        firsts = first(nt, rules, terminals, nonterminals)
+        i = 0
+        l = len(firsts)
 
-    print
+        for f in firsts:
+            if i==l-1:
+                print f,
+            else:
+                print f, ",",
+            i += 1
+
+        print
 
 
 def follow(X, rules, terminals, nonterminals):
@@ -108,9 +110,22 @@ def follow(X, rules, terminals, nonterminals):
     i = -1
     j = 0
 
+    locations = []
+
     for rule in rules:
         i += 1
-        j = 0
-        rhs = rule[2:]
-        if X in rhs:
-            pass
+
+        if X in rule:
+            
+            for j in range(2, len(rule)):
+                if X == rule[j]:
+                    locations.append((i,j))
+
+        else:
+
+            continue
+
+    print locations
+
+
+follow("ASSIGNOP", rules, terminals, nonterminals)
