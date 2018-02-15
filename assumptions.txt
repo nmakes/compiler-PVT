@@ -1,2 +1,0 @@
-ASSUMPTIONS:
- - @ID can be used in arithmetic expressions only (but not in Boolean Expressions - to keep them simple)
