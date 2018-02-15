@@ -2,12 +2,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#define DFA_ERROR_STATE 200
-
-typedef long long int dt_num;
-typedef double dt_rnum;
-typedef unsigned short int dt_stateNumber;
-
 enum dt_flag{False, True};
 
 enum dt_stateType {FINAL, NONFINAL, ERROR};
@@ -20,16 +14,71 @@ enum __DT_ID {TK_ASSIGNOP, TK_COMMENT, TK_FUNID, TK_ID, TK_NUM, TK_RNUM,
 			TK_LE, TK_EQ, TK_GT, TK_LE, TK_NE};
 typedef enum __DT_ID dt_id;
 
-typedef char * str;
+typedef char * dt_str;
 
-num strlen(str s)
+int strlen(dt_str s)
 {
-	num i =0;
-	while(s[i]!=0)
+	if (s==NULL)
 	{
-		i++;
+		return 0;
 	}
-	return i;
+	else
+	{
+		int i =0;
+		while(s[i]!=0)
+		{
+			i++;
+		}
+		return i;	
+	}
+}
+
+void strfree(dt_str base)
+{
+	free(base);
+}
+
+dt_str * strmake(dt_str src)
+{
+	int sl = strlen(src);
+	dt_str * dst = (dt_str) malloc(sl+1);
+	
+	if (dst==NULL)
+	{
+		printf("ERROR::helpers.h::strmake(): couldn't malloc dst");
+		return NULL;
+	}
+	else
+	{
+
+		int i=0;
+		for(i=0; i<sl; i++)
+		{
+			dst[i] = src[i];
+		}
+		dst[i] = '\0';
+
+		return dst;
+	}
+}
+
+int strcmp(dt_str s1, dt_str s2)
+{
+	l1 = strlen(s1);
+	l2 = strlen(s2);
+	
+	if (strlen(s1) != strlen(s2))
+		return 0;
+	else
+	{
+		int i=0;
+		for(i=0; i<l1; i++)
+		{
+			if(s1[i]!=s2[i])
+				return 0;
+		}
+		return 1;
+	}
 }
 
 /*
