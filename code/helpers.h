@@ -2,6 +2,9 @@
 #include <math.h>
 #include <stdio.h>
 
+struct __LINKED_LIST_NODE;
+struct __LINKED_LIST;
+
 enum dt_flag{False, True};
 
 enum dt_stateType {FINAL, NONFINAL, ERROR};
@@ -34,9 +37,7 @@ int strlen(dt_str s)
 }
 
 void strfree(dt_str base)
-{
-	free(base);
-}
+{ free(base); }
 
 dt_str * strmake(dt_str src)
 {
@@ -80,6 +81,87 @@ int strcmp(dt_str s1, dt_str s2)
 		return 1;
 	}
 }
+
+// ====================
+// LINKED LIST DATATYPE
+// ====================
+
+typedef struct __LINKED_LIST_NODE dt_linkedListNode;
+struct __LINKED_LIST_NODE
+{
+	void * data;
+	int size;
+
+	dt_linkedListNode * next;
+	dt_linkedListNode * prev;
+};
+
+dt_linkedListNode * llMakeNode(void * data, int size)
+{
+	dt_linkedListNode * node = (dt_linkedListNode*) malloc(sizeof(dt_linkedListNode));
+	
+	if(node==NULL)
+	{
+		printf("ERROR::helpers.h::llMakeNode: could not malloc node");
+	}
+	else
+	{
+		node->data = data;
+		node->size = size;
+		node->prev = NULL;
+		node->next = NULL;
+	}
+
+	return node;
+}
+
+typedef __LINKED_LIST dt_linkedList;
+struct __LINKED_LIST
+{
+	dt_linkedListNode * head;
+	dt_linkedListNode * tail;
+	int count;
+};
+
+void llInsert(dt_linkedList * l, void * data, int size, int pos=-1)
+{
+	if(pos==-1)
+	{
+		pos = l->count;
+	}
+
+
+	if(ll->head==NULL && ll->tail==NULL)
+	{
+		ll->head = ll->tail = llMakeNode(data, size);
+		ll->count = 1;
+	}
+	else
+	{
+		dt_linkedListNode * mov = l->
+
+		// move pointer and insert in location
+
+		dt_linkedListNode * node = llMakeNode(data, size);
+		node->prev = ll->tail;
+		ll->tail->next = node;
+		ll->tail = node;
+		ll->count++;
+	}
+}
+
+void llRemove()
+
+dt_tokenList * popTokenList(int index=0)
+{
+	if(index==0)
+	{
+		tokenList->head = 
+	}
+}
+
+
+
 
 /*
 
