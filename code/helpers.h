@@ -39,7 +39,7 @@ int strlen(dt_str s)
 void strfree(dt_str base)
 { free(base); }
 
-dt_str * strmake(dt_str src)
+dt_str strmake(dt_str src)
 {
 	int sl = strlen(src);
 	dt_str * dst = (dt_str) malloc(sl+1);
@@ -80,6 +80,19 @@ int strcmp(dt_str s1, dt_str s2)
 		}
 		return 1;
 	}
+}
+
+dt_str strslice(dt_str s, int beg, int end) // s[beg:end] inclusive
+{
+	dt_str slice = (dt_str) malloc(sizeof(char)*(end-beg+1));
+	
+	int i=0;
+	for(i=beg; i<=end; i++)
+	{
+		slice[i] = s[i];
+	}
+
+	return slice;
 }
 
 // ====================
@@ -123,7 +136,7 @@ struct __LINKED_LIST
 	int count;
 };
 
-void llInsert(dt_linkedList * l, void * data, int size, int pos=-1)
+void llPushBack(dt_linkedList * l, void * data, int size, int pos=-1)
 {
 	if(pos==-1)
 	{
@@ -150,13 +163,15 @@ void llInsert(dt_linkedList * l, void * data, int size, int pos=-1)
 	}
 }
 
-void llRemove()
-
-dt_tokenList * popTokenList(int index=0)
+void llPopFront(dt_linkedList * l)
 {
-	if(index==0)
+	if(l->count<=0)
 	{
-		tokenList->head = 
+		printf("ERROR::helpers.h::llPopFront: list is empty");
+	}
+	else if
+	{
+		
 	}
 }
 
