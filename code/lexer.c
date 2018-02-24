@@ -1,9 +1,16 @@
-#include "constructs.h"
+#include "lexerDef.h"
 
-flag shouldRun = True;
+dt_flag shouldRun = True;
 
-dt_dfaState s = 1;
 char input;
+int verbose = 0;
+
+char * tokenTable[100] = {"TK_ASSIGNOP","TK_COMMENT","TK_FUNID",
+"TK_ID ","TK_NUM","TK_RNUM","TK_STR","TK_END","TK_INT","TK_REAL","TK_STRING",
+"TK_MATRIX","TK_MAIN","TK_SQO","TK_SQC","TK_OP ","TK_CL ","TK_SEMICOLON",
+"TK_COMMA","TK_IF ","TK_ELSE","TK_ENDIF","TK_READ","TK_PRINT","TK_FUNCTION",
+"TK_PLUS","TK_MINUS","TK_MUL","TK_DIV","TK_SIZE","TK_AND","TK_OR ","TK_NOT",
+"TK_LT ","TK_LE ","TK_EQ ","TK_GT ","TK_GE ","TK_NE ","TK_EXIT","TK_ABRUPTEND"};
 
 // read input file into buffer
 char buffer[BUFFER_SIZE];
@@ -12,135 +19,1122 @@ char buffer[BUFFER_SIZE];
 int begin=0, forward=0;
 int line_number = 1;
 
-// read the next chunk of file into the buffer
-void readNextChunk(FILE * f, char * buffer, int bufSize)
-{
-	int pos = 0;
-	char c;
+/*
+	======================
+	== STRING FUNCTIONS ==
+	======================
+*/
 
-	// if the file is not empty and there is still space left in the buffer, read the next character
-	while(!feof(f) && pos<bufSize-1)
+dt_str strmake(dt_str src)
+{
+	int sl = strlen(src);
+	dt_str dst = (dt_str) malloc(sl+1);
+	
+	if (dst==NULL)
 	{
-		fscanf(f, "%c", &c);
-		buffer[pos++] = c;
+		printf("ERROR::helpers.h::strmake(): couldn't malloc dst");
+		return NULL;
+	}
+	else
+	{
+
+		int i=0;
+		for(i=0; i<sl; i++)
+		{
+			dst[i] = src[i];
+		}
+		dst[i+1] = '\0';
+
+		return dst;
+	}
+}
+
+dt_str strslice(dt_str s, int beg, int end) // s[beg:end] inclusive
+{
+	dt_str slice = (dt_str) malloc(sizeof(char)*(end-beg+1));
+	
+	int i=0;
+	for(i=beg; i<end; i++)
+	{
+		slice[i] = s[i];
 	}
 
-	buffer[pos] = '\0';
+	return slice;
 }
 
-char getNextChar(FILE * f, char * buffer, int * begin, int * fwd, int bufSize)
+/*
+	=====================
+	== TOKEN FUNCTIONS ==
+	=====================
+*/
+
+dt_token makeToken(dt_str lexeme, dt_id tokenID, int lineNo)
 {
-	if(*fwd >= bufSize - 1)
-		readNextChunk(f, buffer, bufSize);
-	else if(buffer[*fwd+*begin]=='\0')
-		return -1;
+	dt_token t = (dt_token) malloc(sizeof(struct __TOKEN));
+
+	if (t==NULL)
+	{
+		printf("ERROR::constructs.h::make_token(): couldn't malloc token");
+		return NULL;
+	}
 	else
-		return buffer[(*fwd)++];
+	{
+		t->tokenID = tokenID;
+		t->lexeme = strmake(lexeme);
+		t->lineNo = lineNo;
+		t->value = NULL;
+	}
+
+	return t;
 }
 
-dt_token * getNextToken(FILE * inputFile, char * buffer, int * begin, int bufSize)
+void printToken(dt_token token)
+{ printf("%d \t\t\t %s \t\t\t %s \n", token->lineNo, tokenTable[token->tokenID], token->lexeme); }
+
+dt_NUM getNUM(dt_str lexeme)
 {
-	int fwd = 0;
-	char lexeme[MAX_LEXEME_SIZE];
+	int l = strlen(lexeme);
+	int i = l-1;
+
+	dt_NUM val = 0;
+
+	for(i=0; i<=l-1; i++)
+	{
+		val *= 10;
+		val += lexeme[i]-'0';
+	}
+
+	return val;
+}
+
+dt_NUM getRNUM(dt_str lexeme)
+{
+	int dec_pos = 0;
+	int l = strlen(lexeme);
+
+	dt_RNUM val = 0;
+
+	while(lexeme[dec_pos]!='.')
+	{
+		dec_pos++;
+	}
+
+	val = getNUM(strslice(lexeme, 0, dec_pos-1));
+	dt_str decimal = strslice(lexeme, dec_pos+1, l-1);
+	
+	dt_RNUM decival = getNUM(decimal);
+	
+	int i=1;
+
+	for(i=1; i<=strlen(decimal); i++)
+	{
+		decival /= 10;
+	}
+
+	val += decival;
+
+	return val;
+}
+
+long long int findHash (dt_str lexeme, int x, int m)
+{
+	// calculates hash using homer's
+	// hash = ( a[0]*1 + a[1]*x + a[2]*(x**2) .. + a[n]*(x**n) ) mod m
+	// hash = ((((a[n]*x + a[n-1])*x + a[n-1])*x .. ) + a[0]) mod m
+	
+	int max = strlen(lexeme);
+	int cur = max-1;
+
+	long long int hashValue = lexeme[cur];
+
+	for(cur=max-1; cur>0; cur--)
+	{
+		hashValue = ( hashValue * x + lexeme[cur-1] ) % m;
+	}
+
+	return hashValue;
+}
+
+dt_id getTokID(dt_str lexeme)
+{
+	int hashValue = findHash(lexeme, HASH_X, HASH_M);
+	
+	switch(hashValue)
+	{
+		case 11:
+			if(!strcmp(lexeme, "end"))
+				return TK_END;
+			else
+				return TK_ID;
+			break;
+
+		case 9:
+			if(!strcmp(lexeme, "int"))
+				return TK_INT;
+			else
+				return TK_ID;
+			break;
+
+		case 6:
+			if(!strcmp(lexeme, "real"))
+				return TK_REAL;
+			else
+				return TK_ID;
+			break;
+
+		case 13:
+			if(!strcmp(lexeme, "string"))
+				return TK_STRING;
+			else
+				return TK_ID;
+			break;
+
+		case 7:
+			if(!strcmp(lexeme, "matrix"))
+				return TK_MATRIX;
+			else
+				return TK_ID;
+			break;
+
+		case 21:
+			if(!strcmp(lexeme, "if"))
+				return TK_IF;
+			else
+				return TK_ID;
+			break;
+
+		case 17:
+			if(!strcmp(lexeme, "else"))
+				return TK_ELSE;
+			else
+				return TK_ID;
+			break;
+
+		case 8:
+			if(!strcmp(lexeme, "endif"))
+				return TK_ENDIF;
+			else
+				return TK_ID;
+			break;
+
+		case 0:
+			if(!strcmp(lexeme, "read"))
+				return TK_READ;
+			else
+				return TK_ID;
+			break;
+
+		case 25:
+			if(!strcmp(lexeme, "print"))
+				return TK_PRINT;
+			else
+				return TK_ID;
+			break;
+
+		default:
+			return TK_ID;
+	}
+}
+
+/*
+	================
+	== LEXER CODE ==
+	================
+
+	LEXER MODULE FUNCTIONS
+		-removeComments
+		-getNextToken
+*/
+
+void removeComments(FILE *testCaseFile, FILE *cleanFile)
+{
+	dt_flag readingComment = False;
+
+	char c;
+
+	while(!feof(testCaseFile))
+	{
+		fscanf(testCaseFile, "%c", &c);
+
+		if(readingComment==False)
+		{
+			if(c=='#')
+			{
+				readingComment = True;
+			}
+			else
+			{
+				fprintf(cleanFile, "%c", c);
+			}
+		}
+		else
+		{
+			if(c=='\n')
+			{
+				readingComment=False;
+			}
+		}
+	}
+
+	fclose(testCaseFile);
+	fclose(cleanFile);
+}
+
+dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSize)
+{
+	dt_str lexeme = (dt_str)malloc(MAX_LEXEME_SIZE * sizeof(char));
+	memset(lexeme, 0, MAX_LEXEME_SIZE);
+	
+	int fwd = 0; // to move in the lexeme
+	int s = 1; // dfa state
+	int lastState = s;
 
 	// BASIC LOOP of the LEXER
 	while(shouldRun)
 	{
-		input = getNextChar(buffer, &fwd, bufSize);
-
-		if (input==-1) // NO MORE INPUT
+		if(*(*buffer)=='\0') // if buffer is empty
 		{
-			return NULL;
+			// fill the buffer
+			fread(*buffer,bufSize,1,inputFile);
+		}
+
+		// read input
+		input = *(*buffer);
+
+		if(input<=0 && fwd>0)
+		{
+			input=EOFchar;
+		}
+
+		if ((int)input<=0 && fwd==0) // if no more input
+		{
+			// stop running
+			shouldRun = 0;
+			return (dt_token) makeToken(lexeme, TK_EXIT, line_number);
+		}
+		else if((int)input<=0 && fwd!=0)
+		{
+			shouldRun = 0;
+			printf("LEXICAL_ERROR: ABRUPT END OF INPUT at state=%d, lexeme=\'%s\'\n", s, lexeme);
+			return (dt_token) makeToken(lexeme, TK_ABRUPTEND, line_number);
 		}
 		else
 		{
-			switch(s)
+			switch(s) // check the state
 			{
 				case 1: // NONFINAL
-
+				{
+					lastState = s;
 					if (input==' ' || input=='\t' || input=='\r')
+					{	
 						s=1;
+					}
 					else if (input=='\n')
 					{
 						s=1;
 						line_number++;
 					}
-					else if(input=='#')
+					else if(input=='#'){
 						s=2;
-					else if(input=='[')
-						s=4;
-					else if(input==']')
-						s=5;
-					else if(input=='(')
-						s=6;
-					else if(input==')')
-						s=7;
-					else if(input==';')
-						s=8;
-					else if(input==',')
-						s=9;
-					else if(input=='+')
-						s=10;
-					else if(input=='-')
-						s=11;
-					else if(input=='*')
-						s=12;
-					else if(input=='/')
-						s=13;
-					else if(input=='@')
-						s=14;
-					else if(input=='<')
+					}
+					else if(input=='['){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_SQO, line_number);
+						// s=4;
+					}
+					else if(input==']'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_SQC, line_number);
+						// s=5;
+					}
+					else if(input=='('){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_OP, line_number);
+						// s=6;
+					}
+					else if(input==')'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_CL, line_number);
+						// s=7;
+					}
+					else if(input==';'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_SEMICOLON, line_number);
+						// s=8;
+					}
+					else if(input==','){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_COMMA, line_number);
+						// s=9;
+					}
+					else if(input=='+'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_PLUS, line_number);
+						// s=10;
+					}
+					else if(input=='-'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_MINUS, line_number);
+						// s=11;
+					}
+					else if(input=='*'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_MUL, line_number);
+						// s=12;
+					}
+					else if(input=='/'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_DIV, line_number);
+						// s=13;
+					}
+					else if(input=='@'){
+						(*buffer)++;
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_SIZE, line_number);
+						// s=14;
+					}
+					else if(input=='<'){
+						lexeme[fwd++] = input;
 						s=15;
-					else if(input=='>')
+					}
+					else if(input=='>'){
+						lexeme[fwd++] = input;
 						s=17;
-					else if(input=='=')
+					}
+					else if(input=='='){
+						lexeme[fwd++] = input;
 						s=19;
-					else if(input=='\"')
+					}
+					else if(input=='\"'){
+						lexeme[fwd++] = input;
 						s=23;
-					else if(input>='0' && input<='9')
+					}
+					else if(input>='0' && input<='9'){
+						lexeme[fwd++] = input;
 						s=26;
-					else if(input=='.')
+					}
+					else if(input=='.'){
+						lexeme[fwd++] = input;
 						s=30;
-					else if(input=='_')
-						s=40;
-					else if((input>='a' && input<='z') || (input>='A' && input<='Z'))
+					}
+					else if(input=='_'){
+						lexeme[fwd++] = input;
+						s=42;
+					}
+					else if((input>='a' && input<='z') || (input>='A' && input<='Z')){
 						s=44;
+						lexeme[fwd++] = input;	
+					}
+					else if(input==EOFchar)
+					{
+						return (dt_token) makeToken(lexeme, TK_EXIT, line_number);
+					}
 					else
 					{
-						printf("LEXICAL_ERROR: Unrecognized symbol %c (ascii: %d) at state %d", input, (int) input, s);
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
 					}
-
+				}
 				break;
 
-
 				case 2: // NONFINAL
-
+				{
 					if(input=='\n')
 					{
 						s = 3;
 						line_number++;
 					}
 					else
-						continue;
-
+					{
+						s=2;
+					}
+					lastState = s;
+				}
 				break;
-
 
 				case 3: // FINAL
-
+				{
 					// transit back to state 1
 					s = 1;
+					lexeme = (char*)realloc(lexeme, MAX_LEXEME_SIZE * sizeof(char));
 					// comment is discarded automataically
-
+					lastState = s;
+				}
 				break;
 
-				case 4: // FINAL
+				// case 4: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_SQO, line_number);
+				// }
+				// break;
 
-					dt_str lexeme = strslice(buffer, *begin, *begin + fwd - 1);
+				// case 5: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_SQC, line_number);
+				// }
+				// break;
+
+				// case 6: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_OP, line_number);
+				// }
+				// break;
+
+				// case 7: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_CL, line_number);
+				// }
+				// break;
+
+				// case 8: // FINAL
+				// {
+				// lastState = s;
+				// 	//printf("\n%s\n", lexeme);
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_SEMICOLON, line_number);
+				// }
+				// break;
+
+				// case 9: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_COMMA, line_number);
+				// }
+				// break;
+
+				// case 10: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_PLUS, line_number);
+				// }
+				// break;
+
+				// case 11: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_MINUS, line_number);
+				// }
+				// break;
+
+				// case 12: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_MUL, line_number);
+				// }
+				// break;
+
+				// case 13: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_DIV, line_number);
+				// }
+				// break;
+
+				// case 14: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_SIZE, line_number);
+				// }
+				// break;
+
+				case 15: // FINAL
+				{
+					lastState = s;
+					if(input=='=')
+					{
+						lexeme[fwd++] = input;
+						(*buffer)++;
+						return (dt_token)makeToken(lexeme, TK_LE, line_number);
+						// s=16;
+					}
+					else
+					{
+						s = 1;
+						// (*buffer)--;
+						return (dt_token)makeToken(lexeme, TK_LT, line_number);
+					}
+				}
+				break;
+
+				// case 16: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_LE, line_number);
+				// }
+				// break;
+
+				case 17: // FINAL
+				{
+					lastState = s;
+					if(input=='=')
+					{
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_GE, line_number);
+						// s=18;
+					}
+					else
+					{
+						s = 1;
+						// (*buffer)--;
+						return (dt_token)makeToken(lexeme, TK_GT, line_number);
+					}
+				}
+				break;
+
+				// case 18: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_GE, line_number);
+				// }
+				// break;
+
+				case 19: // FINAL
+				{
+					lastState = s;
+					if(input=='=')
+					{
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_EQ, line_number);
+						// s=20;
+					}
+					else if(input=='/')
+					{
+						lexeme[fwd++] = input;
+						s=21;
+					}
+					else
+					{
+						s = 1;
+						// (*buffer)--;
+						return (dt_token)makeToken(lexeme, TK_ASSIGNOP, line_number);
+					}
+				}
+				break;
+
+				// case 20: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_EQ, line_number);
+				// }
+				// break;
+
+				case 21: // NONFINAL
+				{
+					lastState = s;
+					if(input=='=')
+					{
+						lexeme[fwd++] = input;
+						(*buffer)++;
+						return (dt_token)makeToken(lexeme, TK_NE, line_number);
+						// s=22;
+					}
+					else
+					{
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+
+				// case 22: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_NE, line_number);
+				// }
+				// break;
+
+				case 23: // NONFINAL
+				{
+					lastState = s;
+					if((input>='a' && input<='z') || input==' ' || input=='\t')
+					{
+						lexeme[fwd++] = input;
+						s=24;
+					}
+					else
+					{
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+
+				case 24: // NONFINAL
+				{
+					lastState = s;
+					if( (input>='a' && input<='z') || input==' ' || input=='\t')
+					{
+						lexeme[fwd++] = input;
+						s=24;
+					}
+					else if (input=='\"')
+					{
+						lexeme[fwd++] = input;
+						//printf("ABOUTtoRETURN, *buf=%c, *buf-1=%c, *buf+1=%c\n", **buffer, *(*buffer-1), *(*buffer+1));
+						s=1;
+						(*buffer)++;
+						if (strlen(lexeme) > 22)
+						{
+							printf("LEXICAL_WARNING: String Length is more than 20 at state: %d, line: %d, lexeme: %s\n", s, line_number, lexeme);
+							return (dt_token)makeToken(lexeme, TK_STR, line_number);
+						}
+						else
+						{
+							return (dt_token)makeToken(lexeme, TK_STR, line_number);
+						}
+						// s=25;
+					}
+					else
+					{
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+
+				// case 25: // FINAL
+				// {
+				// lastState = s;
+				// 	s = 1;
+				// 	return (dt_token)makeToken(lexeme, TK_STR, line_number);
+				// }
+				// break;
+
+				case 26: // FINAL
+				{
+					lastState = s;
+					if(input>='0' && input<='9')
+					{
+						lexeme[fwd++] = input;
+						s=26;
+					}
+					else if (input=='.')
+					{
+						lexeme[fwd++] = input;
+						s=27;
+					}
+					else
+					{
+						s = 1;
+						//(*buffer)--; // to read the Character read just now, from buffer in the next run
+
+						dt_token tok = makeToken(lexeme, TK_NUM, line_number);
+						tok->value = (dt_NUM*) malloc(sizeof(dt_NUM));
+						*((dt_NUM*) tok->value) = getNUM(lexeme);
+						return (dt_token)tok;
+					}
+				}
+				break;
+
+				case 27: // NONFINAL
+				{
+					lastState = s;
+					if(input>='0' && input<='9')
+					{
+						lexeme[fwd++] = input;
+						s=28;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+
+				case 28: // NONFINAL
+				{
+					lastState = s;
+					if(input>='0' && input<='9')
+					{
+						lexeme[fwd++] = input;
+						(*buffer)++;
+						dt_token tok = makeToken(lexeme, TK_RNUM, line_number);
+						tok->value = (dt_RNUM*) malloc(sizeof(dt_RNUM));
+						*((dt_RNUM*)tok->value) = getNUM(lexeme);
+						return (dt_token)tok;
+						// s=29;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+
+				// case 29: // FINAL
+				// {
+				// 	lastState = s;
+				// 	s = 1;
+				// 	dt_token tok = makeToken(lexeme, TK_RNUM, line_number);
+				// 	tok->value = malloc(sizeof(dt_RNUM));
+				// 	*((dt_NUM*) tok->value) = getRNUM(lexeme);
+				// 	return (dt_token)tok;
+				// }
+				// break;
+				
+				case 30: // NONFINAL
+				{
+					lastState = s;
+					if (input=='a')
+					{
+						lexeme[fwd++] = input;
+						s=31;
+					}
+					else if (input=='n')
+					{
+						lexeme[fwd++] = input;
+						s=35;
+					}
+					else if (input=='o')
+					{
+						lexeme[fwd++] = input;
+						s=39;
+					}
+					else
+					{
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 31: // NONFINAL
+				{
+					lastState = s;
+					if (input=='n')
+					{
+						lexeme[fwd++] = input;
+						s=32;
+					}
+					else
+					{
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						s=1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 32: // NONFINAL
+				{
+					lastState = s;
+					if (input=='d')
+					{
+						lexeme[fwd++] = input;
+						s=33;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 33: // NONFINAL
+				{
+					lastState = s;
+					if (input=='.')
+					{
+						lexeme[fwd++] = input;
+						(*buffer)++;
+						return (dt_token)makeToken(lexeme, TK_AND, line_number);
+						// s=34;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				// case 34: // FINAL
+				// {
+				// 	lastState = s;
+				// 	s = 1;
+				// 	// (*buffer)--;
+				// 	return (dt_token)makeToken(lexeme, TK_AND, line_number);
+				// }
+				// break;
+				
+				case 35: // NONFINAL
+				{
+					lastState = s;
+					if (input=='o')
+					{
+						lexeme[fwd++] = input;
+						s=36;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 36: // NONFINAL
+				{
+					lastState = s;
+					if (input=='t')
+					{
+						lexeme[fwd++] = input;
+						s=37;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 37: // NONFINAL
+				{
+					lastState = s;
+					if (input=='.')
+					{
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_NOT, line_number);
+						s=38;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 38: // FINAL
+				{
+					lastState = s;
 					s = 1;
-					*begin += fwd;
-					return makeToken(lexeme, SQO, line_number);
+					// (*buffer)--;
+					return (dt_token)makeToken(lexeme, TK_NOT, line_number);
+				}
+				break;
+				
+				case 39: // NONFINAL
+				{
+					lastState = s;
+					if (input=='r')
+					{
+						lexeme[fwd++] = input;
+						s=40;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 40: // NONFINAL
+				{
+					lastState = s;
+					if (input=='.')
+					{
+						lexeme[fwd++] = input;
+						return (dt_token)makeToken(lexeme, TK_OR, line_number);
+						s=41;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 41: // FINAL
+				{
+					lastState = s;
+					s = 1;
+					// (*buffer)--;
+					return (dt_token)makeToken(lexeme, TK_OR, line_number);
+				}
+				break;
+				
+				case 42: // NONFINAL
+				{
+					lastState = s;
+					if ((input>='a' && input<='z') || (input>='A' && input<='Z'))
+					{
+						lexeme[fwd++] = input;
+						s=43;
+					}
+					else
+					{
+						s=1;
+						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						(*begin)--;
+					}
+				}
+				break;
+				
+				case 43: // FINAL
+				{
+					lastState = s;
+					if ((input>='a' && input<='z') || (input>='A' && input<='Z') || (input>='0' && input<='9'))
+					{
+						lexeme[fwd++] = input;
+						s=43;
+					}
+					else
+					{
+						s = 1;
+						// (*buffer)--;
+						if(!strcmp(lexeme, "_main"))
+						{
+							//(*buffer)--;
+							return (dt_token)makeToken(lexeme, TK_MAIN, line_number);	
+						}
+						else
+						{
+							//(*buffer)--;
+							return (dt_token)makeToken(lexeme, TK_FUNID, line_number);
+						}
+					}
+				}
+				break;
+				
+				case 44: // FINAL
+				{
+					lastState = s;
+					if (input>='0' && input<='9')
+					{
+						s=45;
+						lexeme[fwd++] = input;
+						(*buffer)++;
+						if (strlen(lexeme) > 20)
+						{
+							printf("LEXER_WARNING: ID Length is more than 20 at state: %d, line: %d, lexeme: %s\n", s, line_number, lexeme);
+							return (dt_token)makeToken(lexeme, TK_ID, line_number);
+						}
+						else
+						{
+							return (dt_token)makeToken(lexeme, TK_ID, line_number);
+						}
+					}
+					else if ( (input>='a' && input<='z') || (input>='A' && input<='Z') )
+					{
+						s=44;
+						lexeme[fwd++] = input;
+					}
+					else
+					{
+						s = 1;
+						//(*buffer)--;
+						// printf("BEGINVALUEWHILERETURNING: %d", *begin);
+						dt_id tok_id = getTokID(lexeme);
+						return (dt_token)makeToken(lexeme, tok_id, line_number);
+					}
+				}
+				break;
+				
+				case 45: // FINAL
+				{
+					lastState = s;
+					s = 1;
+					// (*buffer)++;
+					return (dt_token)makeToken(lexeme, TK_ID, line_number);
+				}
 			}
-		}		
+		}
+	(*buffer)++;
 	}
 }
