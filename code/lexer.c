@@ -341,67 +341,56 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_SQO, line_number);
-						// s=4;
 					}
 					else if(input==']'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_SQC, line_number);
-						// s=5;
 					}
 					else if(input=='('){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_OP, line_number);
-						// s=6;
 					}
 					else if(input==')'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_CL, line_number);
-						// s=7;
 					}
 					else if(input==';'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_SEMICOLON, line_number);
-						// s=8;
 					}
 					else if(input==','){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_COMMA, line_number);
-						// s=9;
 					}
 					else if(input=='+'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_PLUS, line_number);
-						// s=10;
 					}
 					else if(input=='-'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_MINUS, line_number);
-						// s=11;
 					}
 					else if(input=='*'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_MUL, line_number);
-						// s=12;
 					}
 					else if(input=='/'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_DIV, line_number);
-						// s=13;
 					}
 					else if(input=='@'){
 						(*buffer)++;
 						lexeme[fwd++] = input;
 						return (dt_token)makeToken(lexeme, TK_SIZE, line_number);
-						// s=14;
 					}
 					else if(input=='<'){
 						lexeme[fwd++] = input;
@@ -475,106 +464,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				}
 				break;
 
-				// case 4: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_SQO, line_number);
-				// }
-				// break;
-
-				// case 5: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_SQC, line_number);
-				// }
-				// break;
-
-				// case 6: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_OP, line_number);
-				// }
-				// break;
-
-				// case 7: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_CL, line_number);
-				// }
-				// break;
-
-				// case 8: // FINAL
-				// {
-				// lastState = s;
-				// 	//printf("\n%s\n", lexeme);
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_SEMICOLON, line_number);
-				// }
-				// break;
-
-				// case 9: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_COMMA, line_number);
-				// }
-				// break;
-
-				// case 10: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_PLUS, line_number);
-				// }
-				// break;
-
-				// case 11: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_MINUS, line_number);
-				// }
-				// break;
-
-				// case 12: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_MUL, line_number);
-				// }
-				// break;
-
-				// case 13: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_DIV, line_number);
-				// }
-				// break;
-
-				// case 14: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_SIZE, line_number);
-				// }
-				// break;
-
 				case 15: // FINAL
 				{
 					lastState = s;
@@ -594,15 +483,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				}
 				break;
 
-				// case 16: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_LE, line_number);
-				// }
-				// break;
-
 				case 17: // FINAL
 				{
 					lastState = s;
@@ -620,15 +500,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					}
 				}
 				break;
-
-				// case 18: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_GE, line_number);
-				// }
-				// break;
 
 				case 19: // FINAL
 				{
@@ -653,15 +524,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				}
 				break;
 
-				// case 20: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_EQ, line_number);
-				// }
-				// break;
-
 				case 21: // NONFINAL
 				{
 					lastState = s;
@@ -682,15 +544,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					}
 				}
 				break;
-
-				// case 22: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_NE, line_number);
-				// }
-				// break;
 
 				case 23: // NONFINAL
 				{
@@ -722,7 +575,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					else if (input=='\"')
 					{
 						lexeme[fwd++] = input;
-						//printf("ABOUTtoRETURN, *buf=%c, *buf-1=%c, *buf+1=%c\n", **buffer, *(*buffer-1), *(*buffer+1));
 						s=1;
 						(*buffer)++;
 						if (strlen(lexeme) > 22)
@@ -734,7 +586,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						{
 							return (dt_token)makeToken(lexeme, TK_STR, line_number);
 						}
-						// s=25;
 					}
 					else
 					{
@@ -746,14 +597,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					}
 				}
 				break;
-
-				// case 25: // FINAL
-				// {
-				// lastState = s;
-				// 	s = 1;
-				// 	return (dt_token)makeToken(lexeme, TK_STR, line_number);
-				// }
-				// break;
 
 				case 26: // FINAL
 				{
@@ -771,7 +614,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					else
 					{
 						s = 1;
-						//(*buffer)--; // to read the Character read just now, from buffer in the next run
 
 						dt_token tok = makeToken(lexeme, TK_NUM, line_number);
 						tok->value = (dt_NUM*) malloc(sizeof(dt_NUM));
@@ -823,17 +665,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					}
 				}
 				break;
-
-				// case 29: // FINAL
-				// {
-				// 	lastState = s;
-				// 	s = 1;
-				// 	dt_token tok = makeToken(lexeme, TK_RNUM, line_number);
-				// 	tok->value = malloc(sizeof(dt_RNUM));
-				// 	*((dt_NUM*) tok->value) = getRNUM(lexeme);
-				// 	return (dt_token)tok;
-				// }
-				// break;
 				
 				case 30: // NONFINAL
 				{
@@ -910,7 +741,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						lexeme[fwd++] = input;
 						(*buffer)++;
 						return (dt_token)makeToken(lexeme, TK_AND, line_number);
-						// s=34;
 					}
 					else
 					{
@@ -922,15 +752,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					}
 				}
 				break;
-				
-				// case 34: // FINAL
-				// {
-				// 	lastState = s;
-				// 	s = 1;
-				// 	// (*buffer)--;
-				// 	return (dt_token)makeToken(lexeme, TK_AND, line_number);
-				// }
-				// break;
 				
 				case 35: // NONFINAL
 				{
@@ -1042,7 +863,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				{
 					lastState = s;
 					s = 1;
-					// (*buffer)--;
 					return (dt_token)makeToken(lexeme, TK_OR, line_number);
 				}
 				break;
@@ -1080,12 +900,10 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						// (*buffer)--;
 						if(!strcmp(lexeme, "_main"))
 						{
-							//(*buffer)--;
 							return (dt_token)makeToken(lexeme, TK_MAIN, line_number);	
 						}
 						else
 						{
-							//(*buffer)--;
 							return (dt_token)makeToken(lexeme, TK_FUNID, line_number);
 						}
 					}
@@ -1118,8 +936,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 					else
 					{
 						s = 1;
-						//(*buffer)--;
-						// printf("BEGINVALUEWHILERETURNING: %d", *begin);
 						dt_id tok_id = getTokID(lexeme);
 						return (dt_token)makeToken(lexeme, tok_id, line_number);
 					}
@@ -1130,7 +946,6 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				{
 					lastState = s;
 					s = 1;
-					// (*buffer)++;
 					return (dt_token)makeToken(lexeme, TK_ID, line_number);
 				}
 			}
