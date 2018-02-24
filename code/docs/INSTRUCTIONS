@@ -1,0 +1,181 @@
+INSTRUCTIONS
+
+Implementation Details
+----------------------
+
+Complete compiler project must be developed using C programming language. Ensure that your code is compatible to GCC version 5.4.0 (on Linux ubuntu version 16).
+
+Students are advised to design data structures for token info, grammar, parse table, parse tree etc. and use names in self explanatory form. Following are the suggested prototypes along with the corresponding details which are provided only as a support. However, students have the flexibility to select these or design their own prototypes, parameters etc. appropriately.
+
+1. File lexer.c : This file contains following functions
+
+FILE *getStream(FILE *fp): This function takes the input from the file pointed to by 'fp'. This file is the source code written in the given language. The function uses efficient techniques to bring the fixed sized piece of source code into the memory for processing so as to avoid intensive I/O operations mixed with CPU intensive tasks. The function also maintains the file pointer after every access so that it can get more data into the memory on demand.
+
+tokenInfo  getNextToken( ): This function reads input character stream and uses efficient mechanism to recognize lexemes. The function tokenizes the lexeme appropriately and returns all relevant information it collects in this phase (lexical analysis phase) encapsulated as tokenInfo. The function also displays lexical errors appropriately.
+
+void removeComments(char *testcaseFile, char *cleanFile): This function is an additional plug in to clean the source code by removal of comments. The function takes as input the source code and writes the clean code in the file appropriately. The function is not used by the parser but is invoked in the driver file for the purpose of demonstrating the capability of your lexer for comment removal. 
+
+2. File parser.c : This file contains following functions
+
+FirstAndFollow  *ComputeFirstAndFollowSets(grammar G): This function takes as input the grammar G, computes FIRST and FOLLOW information and populates appropriate data structure. First and Follow set automation must be attempted, keeping in view the programming confidence and available time with you. 
+
+The weight for the above is only 5 marks out of 45 marks reserved for stage 1 module. If a student opts  not to develop the module for computation of First and follow sets, then he/she can use the manually computed FIRST and FOLLOW sets, and populate in the appropriate data structures.
+
+void createParseTable(FirstAndFollow F, table T): This function takes as input the FIRST and FOLLOW information above to populate the parse table T appropriately. Hand coded parse table will not be accepted.
+
+parseTree   parseInputSourceCode(char *testcaseFile, table T): This function takes as input the source code file and parses using the rules as per the predictive parse table T. The function gets the tokens using lexical analysis interface and establishes the syntactic structure of the input source code using rules in T. The function must report all errors appropriately if the source code is syntactically incorrect. Error recovery must be implemented to list all errors. Parsers which report one error at a time and quit before listing all errors are considered bad, therefore students are advised to implement error recovery appropriately.
+
+If the source code is correct then the token and all its relevant information is added to the parse tree. The start symbol of the grammar is the root of the parse tree and the tree grows as syntax analysis moves in top down way. 
+
+The function must display a message "Input source code is syntactically correct..........." for successful parsing.
+
+void printParseTree(parseTree PT, char *outfile): This function provides an interface for observing the correctness of the creation of parse tree. The function prints the parse tree in inorder in the file outfile. The output is such that each line of the file outfile must contain the information corresponding to the currently visited node of the parse tree in the following format 
+
+lexemeCurrentNode  lineno token valueIfNumber parentNodeSymbol
+
+isLeafNode(yes/no) NodeSymbol
+
+The lexeme of the current node is printed when it is the leaf node else a dummy string of characters "‐‐‐‐" is printed. The line number is one of the information collected by the lexical analyzer during single pass of the source code. The token name corresponding to the current node is printed third. If the lexeme is an integer or real number, then its value computed by the lexical analyzer should be printed at the fourth place. Print the grammar symbol (non terminal symbol) of the parent node of the currently visited node appropriately at fifth place (for the root node print ROOT for parent symbol) . The sixth column is for printing yes or no appropriately. Print the non terminal symbol of the node being currently visited at the 7th place, if the node is not the leaf node [Print the actual nonterminal symbol and not the enumerated values for the nonterminal]. Ensure appropriate justification so that the columns appear neat and straight.
+
+Description of other files
+
+lexerDef.h : Contains all data definitions used in lexer.c
+
+lexer.h : Contains function prototype declarations of functions in lexer.c
+
+parserDef.h : Contains all definitions for data types such as grammar, table, parseTree etc.
+
+used in parser.c
+
+parser.h : Contains function prototype declarations of functions in parser.c
+
+driver.c : As usual, drives the flow of execution to solve the given problem. (more details,
+
+if needed, will be uploaded soon)
+
+NOTE:
+
+1.A file using definitions and functions from other files must include interface files appropriately. For example parser.c uses functions of lexer.c, so lexer.h should be included in parser.c. Do not include lexer.h in lexer.c, as lexer.c already has its own function details. Also, Keep data definitions in files separate from the files containing function prototypes. In case of doubts, meet me and clarify your doubts. It is essential to place the contents in appropriate files and have correct set of files. [if files are not appropriately used and contents are not placed in appropriate files, your code may not get executed properly.
+
+2. Make a folder named exactly as your ID.
+
+3. Keep all your files in the above folder. No subdirectory should exist within your folder. All test cases, makefile and driver file along with all implementation and interface files should reside in one folder.
+
+4. Each file must contain your  name and ID at the top as comments.
+
+5. Use of any high level library other than standard C library is strictly not allowed.
+
+6. Your code should not be hard coded to the extent possible so as to enable you to adapt to any required change at a later stage. 
+
+7. More updates in terms of modified grammar and FIRST and FOLLOW sets (as support), errata, clarifications regarding the language features and grammar updates, exact driver details, test cases etc. will be uploaded from time to time. Students must keep a continuous watch on the updates.
+
+8. Students are advised to keep a pace with the lectures, attend all classes regularly, meet me to clarify doubts regarding theory or implementation, data structure design and efficiency issues.
+
+
+
+
+
+STAGE 1: Driver details and error reporting
+-------------------------------------------
+Your driver must have the following choices
+
+Press option for the defined task
+
+1 : For removal of comments ‐ print the comment free code on the console
+
+2 : For printing the token list (on the console) generated by the lexer.
+
+Each token appears in a new line along with the corresponding lexeme and line number.
+
+3 : For parsing to verify the syntactic correctness of the input source code
+
+Ensure that you are not using any intermediate file to store the tokens received from the lexer and thereafter used by parser. The parser must have a direct interface with the lexer when this option is selected. When selected option 3, all errors are displayed, if the code is not correct syntactically. If the code is syntactically correct, then a message appears on the screen for successful compilation.
+
+Parse tree is created while parsing the input. If the input source code has errors, the parse tree may not contain the corresponding sub-trees constructed (while skipping symbols for panic mode recovery) but it is created despite the errors. If the source code is syntactically correct, the constructed parse tree is complete and correct.
+
+4 : For printing the parse tree appropriately
+
+This option prints the parse tree.
+
+Perform all of above actions appropriately by invoking appropriate functions.
+
+The driver displays necessary information at the beginning on the console such as
+
+(a) FIRST and FOLLOW set automated
+
+(b) Only Lexical analyzer module developed
+
+(c) Both lexical and syntax analysis modules implemented
+
+(d) modules compile but give segmentation fault
+
+(e) modules work with test cases 2, 3 and 4 only
+
+(f) parse tree could not be constructed
+
+and so on which ever is applicable.
+
+Error reporting 
+
+ERRORS to be notified along with the associated message as your lexer and parser execute are listed below. Print the line numbers and type of error (lexical or syntactic) followed by an appropriate error message.
+
+Lexical Errors: 
+
+line no.: Lexical error : Identifier is longer than the prescribed length
+
+line no.: Lexical error: Unknown Symbol <print the symbol here> 
+
+line no.: Lexical error: Unknown pattern <print the lexeme seen so far which does not match any pattern>
+
+line no.: Lexical error:  Specify<Any other as per your perception>
+
+Syntax Errors:
+
+line no.: Syntax error: The token <specify> for lexeme <specify> does not match at line <specify no>. The expected token here is <specify the expected token here>
+
+Some more errors to be reported can be designed based on the sample test cases. 
+
+Implement panic mode error recovery using a set of synchronizing symbols and report all errors in the source code. All errors in the source code must be listed in the sequence of increasing line numbers.
+
+Students are advised to meet me to clarify their doubts.
+
+
+
+
+
+Stage 1: Some updates
+---------------------
+1. The  number of digits in an integer or a real number is not fixed in this stage of implementation. It will be restricted at the later stage of code generation.
+2. There is no semicolon after end corresponding to main function in test cases 1-5.
+3. A comment can have blanks and white spaces in between. It has end of line character (\n) only at the end.
+4. A string can also have blank characters. Modify the pattern as ["][a-z | blank ][a-z| blank]*["]. The maximum size of the string is 20 inclusive of both end characters (") and blanks within.
+5. A function definition must have at least one input and one output parameter. [Modified grammar rules 6 and 8 are correct]
+6. There is no restriction on the maximum number of parameters in a function definition.
+7. A function call statement which does not return any value is invoked differently as mentioned in the language specification document. Any update in number of parameters required for semantic analysis will be taken care later.
+8. The lexeme abc123 should be tokenized as ID followed by NUM for abc1 and 23 respectively. Similarly lexeme 23.456 should be broken according to the regular expression for RNUM mentioned in the language specifications document and tokenized as RNUM followed by NUM for 23.45 and 6 respectively.
+9. Source code should be printed after comment removal only on the console (and not in file).
+10. A lexical error need not be tokenized. It should be reported with line number.
+11. A lexical error is not passed to the parser.
+12. All errors whether lexical or syntactic must be reported in the increasing order of line numbers. 
+13. Make sure that the panic mode error recovery heuristic and synchronizing set handle at least 6 out of 10 errors and report appropriately. This does not mean that parser is not able to detect remaining errors in absence of those  reported earlier.
+14. The inorder traversal for an n‐ary tree can be seen as follows
+
+Leftmost child ‐‐> parent node‐‐> remaining siblings (excluding the leftmost)
+
+
+
+
+
+Stage 1: Submission
+-------------------
+The code submission will be through your Nalanda account.
+
+The link will be opened two hours before the deadline on February 26, 2018.
+
+Students are required to fill in the coding details proforma (to be uploaded soon) and declare that the code submitted by them is genuinely developed by them. The completed document with name and ID will be required to be placed along with your code files in the same folder.
+Submission guidelines will be uploaded in due course of time.
+Submissions  not conforming to the guidelines strictly will not be evaluated.
+Submissions through email will NOT be accepted in any circumstances.
+Ensure that your code is compatible to GCC 5.4.0 and LINUX(Ubuntu) version 16 as specified earlier.
+If the submitted code is found plagiarized, the student will be awarded a straight 0. Please refer malpractice regulations mentioned in the course handout.
+Students can avail lifeline and will be allowed to submit their code 24 hours later i.e. on February 27, 2018 without any loss of marks. Students have only one lifeline for the entire two stage project (refer the handout at Instruction Division website for more details)

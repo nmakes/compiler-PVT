@@ -146,10 +146,6 @@ int grRHSSize(gr_rhs head)
 	return size;
 }
 
-// ========================================
-
-
-
 gr_lhs grLHSMakeNode(symbol sym) // assuming sym is a newly malloc'd object
 {	
 	gr_lhs lhs = (gr_lhs) malloc(sizeof(struct __GR_LHS));
@@ -174,10 +170,6 @@ void grLHSAppendRHS(gr_lhs lhs, gr_rhs node) // assuming node is a newly malloc'
 		lhs->tail = node;
 	}
 }
-
-// ========================================
-
-
 
 gr_lhs grInitLHSArray(grammar gr, int size)
 {

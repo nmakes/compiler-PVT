@@ -19,7 +19,6 @@ _main[]
 		
 	String s = "abc";
 
-	.an12
 
 	#above has two errors one in the recognition of the lexeme String as ID 
 	# and not that as STRING

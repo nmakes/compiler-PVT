@@ -40,8 +40,8 @@ enum __DT_ID {
 			TK_rightHandSide_type1, TK_rightHandSide_type2, TK_sizeExpression, TK_ifStmt, 
 			TK_otherStmts, TK_ioStmt, TK_funCallStmt, TK_inputParameterList, TK_listVar, 
 			TK_arithmeticExpression, TK_arithmeticTerm, TK_factor, TK_operator_lowPrecedence, 
-			TK_operator_highPrecedence, TK_booleanExpression, TK_constrainedVars, TK_var, 
-			TK_matrix, TK_rows, TK_row, TK_remainingColElements, TK_matrixElement, TK_logicalOp, 
+			TK_operator_highPrecedence, TK_constrainedVars, TK_var, TK_matrix, TK_rows, 
+			TK_row, TK_remainingColElements, TK_matrixElement, TK_logicalOp, 
 			TK_booleanExpression, TK_relationalOp
 		};
 typedef enum __DT_ID dt_id;

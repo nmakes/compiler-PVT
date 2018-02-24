@@ -2,6 +2,20 @@
 
 // dt_str inputFile = "samplecode.nv";
 
+void _ENDL()
+{
+	printf("\n");
+}
+# define endl _ENDL()
+
+void printMenu()
+{
+	endl;
+	endl;
+	printf("NCC compiler : v1.0");
+	printf("1. ");
+}
+
 int main(int argc, char const *argv[])
 {
 	FILE * f = fopen(argv[1], "r");

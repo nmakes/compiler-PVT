@@ -280,6 +280,12 @@ void removeComments(FILE *testCaseFile, FILE *cleanFile)
 	fclose(cleanFile);
 }
 
+FILE * getStream(FILE * f, dt_str * buffer, int bufSize)
+{
+	fread(*buffer,bufSize,1,f);
+	return f;
+}
+
 dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSize)
 {
 	dt_str lexeme = (dt_str)malloc(MAX_LEXEME_SIZE * sizeof(char));
@@ -434,7 +440,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -540,7 +546,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -559,7 +565,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -593,7 +599,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -637,7 +643,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -661,7 +667,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -690,7 +696,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -709,7 +715,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						s=1;
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -728,7 +734,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -748,7 +754,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -767,7 +773,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -786,7 +792,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -806,7 +812,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -834,7 +840,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -854,7 +860,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;
@@ -881,7 +887,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 						printf("LEXICAL_ERROR: Unrecognized symbol \'%c\' (ascii: %d) at state: %d, line: %d, lexeme: %s\n", input, (int) input, s, line_number, lexeme);
 						fwd = 0;
 						memset(lexeme, 0, MAX_LEXEME_SIZE);
-						(*begin)--;
+						(*buffer)--;
 					}
 				}
 				break;

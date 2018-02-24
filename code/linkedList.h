@@ -1,20 +1,31 @@
 // ====================
 // LINKED LIST DATATYPE
 // ====================
-
+struct __LINKED_LIST_NODE;
+struct __LINKED_LIST;
 typedef struct __LINKED_LIST_NODE dt_linkedListNode;
-struct struct __LINKED_LIST_NODE
+typedef struct __LINKED_LIST dt_linkedList;
+
+struct __LINKED_LIST_NODE
 {
 	void * data;
 	int size;
 
-	dt_linkedListNode * next;
-	dt_linkedListNode * prev;
+	dt_linkedListNode next;
+	dt_linkedListNode prev;
 };
 
-dt_linkedListNode * llMakeNode(void * data, int size)
+struct __LINKED_LIST
 {
-	dt_linkedListNode * node = (dt_linkedListNode*) malloc(sizeof(dt_linkedListNode));
+	dt_linkedListNode front;
+	dt_linkedListNode back;
+	int count;
+};
+// front [0]-[1]-[2]-...-[n] back
+
+dt_linkedListNode llMakeNode(void * data, int size)
+{
+	dt_linkedListNode node = (dt_linkedListNode) malloc(sizeof(struct __LINKED_LIST_NODE));
 	
 	if(node==NULL)
 	{
@@ -31,49 +42,101 @@ dt_linkedListNode * llMakeNode(void * data, int size)
 	return node;
 }
 
-typedef __LINKED_LIST dt_linkedList;
-struct __LINKED_LIST
+void llFreeNode(dt_linkedListNode node)
 {
-	dt_linkedListNode * head;
-	dt_linkedListNode * tail;
-	int count;
-};
+	free(node->data);
+	free(node);
+}
 
-void llPushBack(dt_linkedList * l, void * data, int size, int pos=-1)
+dt_linkedList llInit()
 {
-	if(pos==-1)
-	{
-		pos = l->count;
-	}
+	dt_linkedList l = (dt_linkedList) malloc(sizeof(struct __LINKED_LIST));
+	l->front = NULL;
+	l->back = NULL;
+	l->count = 0;
+	return l;
+}
 
-
-	if(ll->head==NULL && ll->tail==NULL)
+void llPushBack(dt_linkedList ll, void * data, int size)
+{
+	if(ll->front==NULL && ll->back==NULL)
 	{
-		ll->head = ll->tail = llMakeNode(data, size);
+		ll->front = ll->back = llMakeNode(data, size);
 		ll->count = 1;
 	}
 	else
 	{
-		dt_linkedListNode * mov = l->
-
-		// move pointer and insert in location
-
-		dt_linkedListNode * node = llMakeNode(data, size);
-		node->prev = ll->tail;
-		ll->tail->next = node;
-		ll->tail = node;
+		dt_linkedListNode  node = llMakeNode(data, size);
+		node->prev = ll->back;
+		ll->back->next = node;
+		ll->back = node;
 		ll->count++;
 	}
 }
 
-void llPopFront(dt_linkedList * l)
+void llPushFront(dt_linkedList ll, void * data, int size)
+{
+	if(ll->front==NULL && ll->back==NULL)
+	{
+		ll->front = ll->back = llMakeNode(data, size);
+		ll->count = 1;
+	}
+	else
+	{
+		dt_linkedListNode  node = llMakeNode(data, size);
+		node->next = ll->front;
+		ll->front->prev = node;
+		ll->front = node;
+		ll->count++;
+	}
+}
+
+void llPopFront(dt_linkedList ll)
 {
 	if(l->count<=0)
 	{
 		printf("ERROR::helpers.h::llPopFront: list is empty");
 	}
-	else if
+	else if(ll->front==ll->back)
 	{
-		
+		dt_linkedListNode node = llMakeNode(ll->front->data, ll->front->size);
+		dt_linkedListNode topNode = ll->front;
+		ll->front = ll->back = NULL;
+		ll->count = 0;
+		llFreeNode(topNode);
+	}
+	else
+	{
+		dt_linkedListNode node = llMakeNode(ll->front->data, ll->front->size);
+		dt_linkedListNode topNode = ll->front;
+		ll->front = topNode->next;
+		ll->front->prev = NULL;
+		ll->count--;
+		llFreeNode(topNode);
+	}
+}
+
+void llPopBack(dt_linkedList ll)
+{
+	if(l->count<=0)
+	{
+		printf("ERROR::helpers.h::llPopBack: list is empty");
+	}
+	else if(ll->front==ll->back)
+	{
+		dt_linkedListNode node = llMakeNode(ll->back->data, ll->back->size);
+		dt_linkedListNode endNode = ll->back;
+		ll->back = ll->front = NULL;
+		ll->count = 0;
+		llFreeNode(endNode);
+	}
+	else
+	{
+		dt_linkedListNode node = llMakeNode(ll->back->data, ll->back->size);
+		dt_linkedListNode endNode = ll->back;
+		ll->back = endNode->prev;
+		ll->back->next = NULL;
+		ll->count--;
+		llFreeNode(endNode);
 	}
 }
