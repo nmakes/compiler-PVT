@@ -5,12 +5,29 @@ dt_flag shouldRun = True;
 char input;
 int verbose = 0;
 
-char * tokenTable[100] = {"TK_ASSIGNOP","TK_COMMENT","TK_FUNID",
-"TK_ID ","TK_NUM","TK_RNUM","TK_STR","TK_END","TK_INT","TK_REAL","TK_STRING",
-"TK_MATRIX","TK_MAIN","TK_SQO","TK_SQC","TK_OP ","TK_CL ","TK_SEMICOLON",
-"TK_COMMA","TK_IF ","TK_ELSE","TK_ENDIF","TK_READ","TK_PRINT","TK_FUNCTION",
-"TK_PLUS","TK_MINUS","TK_MUL","TK_DIV","TK_SIZE","TK_AND","TK_OR ","TK_NOT",
-"TK_LT ","TK_LE ","TK_EQ ","TK_GT ","TK_GE ","TK_NE ","TK_EXIT","TK_ABRUPTEND"};
+char * tokenTable[ENUM_SEP_NONTERMINALS] = {
+// TERMINALS
+"ASSIGNOP", "COMMENT", "FUNID", "ID", "NUM", "RNUM", "STR", "END", 
+"INT", "REAL", "STRING", "MATRIX", "MAIN", "SQO", "SQC", "OP", 
+"CL", "SEMICOLON", "COMMA", "IF", "ELSE", "ENDIF", "READ", "PRINT", 
+"FUNCTION", "PLUS", "MINUS", "MUL", "DIV", "SIZE", "AND", "OR", 
+"NOT", "LT", "LE", "EQ", "GT", "GE", "NE", "_epsilon_", "ENUM_SEP_TERMINALS",
+
+// CONTROL SYMBOLS
+"EXIT", "ABRUPTEND", "ENUM_SEP_CONTROL", 
+
+// NON TERMINALS
+"mainFunction", "stmtsAndFunctionDefs", "other1", "stmtOrFunctionDef", "stmt", 
+"functionDef", "parameter_list", "remainingList", "type", "declarationStmt", 
+"var_list", "more_ids", "assignmentStmt_type1", "assignmentStmt_type2", 
+"leftHandSide_singleVar", "leftHandSide_listVar", "rightHandSide_type1", 
+"rightHandSide_type2", "sizeExpression", "ifStmt", "other2", "otherStmts", 
+"ioStmt", "funCallStmt", "inputParameterList", "listVar", "arithmeticExpression", 
+"other3", "arithmeticTerm", "other4", "factor", "operator_lowPrecedence", 
+"operator_highPrecedence", "booleanExpression", "constrainedVars", "var", "matrix", 
+"rows", "other5", "row", "other6", "remainingColElements", "matrixElement", 
+"logicalOp", "relationalOp", "ENUM_SEP_NONTERMINALS"
+};
 
 // read input file into buffer
 char buffer[BUFFER_SIZE];
@@ -25,7 +42,7 @@ int line_number = 1;
 	======================
 */
 
-dt_str strmake(dt_str src)
+dt_str strmake(const char * src)
 {
 	int sl = strlen(src);
 	dt_str dst = (dt_str) malloc(sl+1);
@@ -63,6 +80,131 @@ dt_str strslice(dt_str s, int beg, int end) // s[beg:end] inclusive
 }
 
 /*
+	===========================
+	== LINKED LIST FUNCTIONS ==
+	===========================
+*/
+
+dt_linkedListNode llMakeNode(void * data, int size)
+{
+	dt_linkedListNode node = (dt_linkedListNode) malloc(sizeof(struct __LINKED_LIST_NODE));
+	
+	if(node==NULL)
+	{
+		printf("ERROR::helpers.h::llMakeNode: could not malloc node");
+	}
+	else
+	{
+		node->data = data;
+		node->size = size;
+		node->prev = NULL;
+		node->next = NULL;
+	}
+
+	return node;
+}
+
+void llFreeNode(dt_linkedListNode node)
+{
+	free(node->data);
+	free(node);
+}
+
+dt_linkedList llInit()
+{
+	dt_linkedList l = (dt_linkedList) malloc(sizeof(struct __LINKED_LIST));
+	l->front = NULL;
+	l->back = NULL;
+	l->count = 0;
+	return l;
+}
+
+void llPushBack(dt_linkedList ll, void * data, int size)
+{
+	if(ll->front==NULL && ll->back==NULL)
+	{
+		ll->front = ll->back = llMakeNode(data, size);
+		ll->count = 1;
+	}
+	else
+	{
+		dt_linkedListNode  node = llMakeNode(data, size);
+		node->prev = ll->back;
+		ll->back->next = node;
+		ll->back = node;
+		ll->count++;
+	}
+}
+
+void llPushFront(dt_linkedList ll, void * data, int size)
+{
+	if(ll->front==NULL && ll->back==NULL)
+	{
+		ll->front = ll->back = llMakeNode(data, size);
+		ll->count = 1;
+	}
+	else
+	{
+		dt_linkedListNode  node = llMakeNode(data, size);
+		node->next = ll->front;
+		ll->front->prev = node;
+		ll->front = node;
+		ll->count++;
+	}
+}
+
+void llPopFront(dt_linkedList ll)
+{
+	if(ll->count<=0)
+	{
+		printf("ERROR::helpers.h::llPopFront: list is empty");
+	}
+	else if(ll->front==ll->back)
+	{
+		dt_linkedListNode node = llMakeNode(ll->front->data, ll->front->size);
+		dt_linkedListNode topNode = ll->front;
+		ll->front = ll->back = NULL;
+		ll->count = 0;
+		llFreeNode(topNode);
+	}
+	else
+	{
+		dt_linkedListNode node = llMakeNode(ll->front->data, ll->front->size);
+		dt_linkedListNode topNode = ll->front;
+		ll->front = topNode->next;
+		ll->front->prev = NULL;
+		ll->count--;
+		llFreeNode(topNode);
+	}
+}
+
+void llPopBack(dt_linkedList ll)
+{
+	if(ll->count<=0)
+	{
+		printf("ERROR::helpers.h::llPopBack: list is empty");
+	}
+	else if(ll->front==ll->back)
+	{
+		dt_linkedListNode node = llMakeNode(ll->back->data, ll->back->size);
+		dt_linkedListNode endNode = ll->back;
+		ll->back = ll->front = NULL;
+		ll->count = 0;
+		llFreeNode(endNode);
+	}
+	else
+	{
+		dt_linkedListNode node = llMakeNode(ll->back->data, ll->back->size);
+		dt_linkedListNode endNode = ll->back;
+		ll->back = endNode->prev;
+		ll->back->next = NULL;
+		ll->count--;
+		llFreeNode(endNode);
+	}
+}
+
+
+/*
 	=====================
 	== TOKEN FUNCTIONS ==
 	=====================
@@ -89,7 +231,7 @@ dt_token makeToken(dt_str lexeme, dt_id tokenID, int lineNo)
 }
 
 void printToken(dt_token token)
-{ printf("%d \t\t\t %s \t\t\t %s \n", token->lineNo, tokenTable[token->tokenID], token->lexeme); }
+{ printf("%-10d %-20s %-20s\n", token->lineNo, tokenTable[token->tokenID], token->lexeme); }
 
 dt_NUM getNUM(dt_str lexeme)
 {
@@ -236,6 +378,7 @@ dt_id getTokID(dt_str lexeme)
 	}
 }
 
+
 /*
 	================
 	== LEXER CODE ==
@@ -246,43 +389,59 @@ dt_id getTokID(dt_str lexeme)
 		-getNextToken
 */
 
-void removeComments(FILE *testCaseFile, FILE *cleanFile)
+void removeComments(dt_str testCaseFileName) // will be printed only on the console and not in the file
 {
-	dt_flag readingComment = False;
+	FILE * testCaseFile = fopen(testCaseFileName, "r");
 
-	char c;
-
-	while(!feof(testCaseFile))
+	if(testCaseFile==NULL)
 	{
-		fscanf(testCaseFile, "%c", &c);
+		printf("ERROR::lexer.c::removeComments: Couldn\'t open code file %s", testCaseFileName);
+	}
+	else
+	{
+		printf("~~~~ Source Code Without Comments ~~~~\n");
+		dt_flag readingComment = False;
 
-		if(readingComment==False)
+		char c;
+
+		while(!feof(testCaseFile))
 		{
-			if(c=='#')
+			fscanf(testCaseFile, "%c", &c);
+
+			if(feof(testCaseFile))
 			{
-				readingComment = True;
+				break;
+			}
+
+			if(readingComment==False)
+			{
+				if(c=='#')
+				{
+					readingComment = True;
+				}
+				else
+				{
+					printf("%c", c);
+				}
 			}
 			else
 			{
-				fprintf(cleanFile, "%c", c);
+				if(c=='\n')
+				{
+					readingComment=False;
+				}
 			}
 		}
-		else
-		{
-			if(c=='\n')
-			{
-				readingComment=False;
-			}
-		}
-	}
 
-	fclose(testCaseFile);
-	fclose(cleanFile);
+		fclose(testCaseFile);
+		printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	}
 }
 
 FILE * getStream(FILE * f, dt_str * buffer, int bufSize)
 {
-	fread(*buffer,bufSize,1,f);
+	memset(*buffer, 0, bufSize);
+	fread(*buffer,bufSize-1,1,f);
 	return f;
 }
 
@@ -301,7 +460,8 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 		if(*(*buffer)=='\0') // if buffer is empty
 		{
 			// fill the buffer
-			fread(*buffer,bufSize,1,inputFile);
+			getStream(inputFile, buffer, bufSize);
+			// fread(*buffer,bufSize,1,inputFile);
 		}
 
 		// read input

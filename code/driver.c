@@ -18,7 +18,9 @@ void printMenu()
 
 int main(int argc, char const *argv[])
 {
-	FILE * f = fopen(argv[1], "r");
+	dt_str testCaseFileName = strmake(argv[1]);
+	removeComments(testCaseFileName);
+	FILE * f = fopen(testCaseFileName, "r");
 	
 	int shouldRun = 1;
 
@@ -33,8 +35,9 @@ int main(int argc, char const *argv[])
 	memset(buf,'\0',BUFFER_SIZE);
 	int begin = 0;
 
-	printf("line \t\t\t token \t\t\t\t lexeme \n");
-	printf("---- \t\t\t ----- \t\t\t\t ------ \n");
+	printf("\n~~~ TOKEN LIST ~~~\n\n");
+	printf("%-10s %-20s %-20s\n","line","token", "lexeme");
+	printf("%-10s %-20s %-20s\n","----","-----", "------");
 
 	dt_token tk = NULL;
 	while(!feof(f) && shouldRun)

@@ -107,20 +107,21 @@ dt_set setDifference(dt_set s1, dt_set s2)
 
 // PARSER CODE
 
-symbol makeSymbol(dt_str lexeme, dt_id tokID, int isTerminal)
-{
-	symbol s = (symbol) malloc(sizeof(struct __SYMBOL));
-	s->lexeme = strmake(lexeme);
-	s->tokID = tokID;
-	s->isTerminal = isTerminal;
-	return s;
-}
+// symbol makeSymbol(dt_str lexeme, dt_id tokID, int isTerminal)
+// {
+// 	symbol s = (symbol) malloc(sizeof(struct __SYMBOL));
+// 	s->lexeme = strmake(lexeme);
+// 	s->tokID = tokID;
+// 	s->isTerminal = isTerminal;
+// 	return s;
+// }
 
-gr_rhs grRHSMakeNode(symbol sym) // assuming sym is a newly malloc'd object
-{	
+gr_rhs grRHSMakeNode(dt_id sym)
+{
 	gr_rhs rhs = (gr_rhs) malloc(sizeof(struct __GR_RHS));
 	rhs->sym = sym;
 	rhs->next = NULL;
+	rhs->prev = NULL;
 	return rhs;
 }
 
@@ -146,8 +147,8 @@ int grRHSSize(gr_rhs head)
 	return size;
 }
 
-gr_lhs grLHSMakeNode(symbol sym) // assuming sym is a newly malloc'd object
-{	
+gr_lhs grLHSMakeNode(dt_id sym)
+{
 	gr_lhs lhs = (gr_lhs) malloc(sizeof(struct __GR_LHS));
 	lhs->sym = sym;
 	lhs->head = NULL;
@@ -166,25 +167,222 @@ void grLHSAppendRHS(gr_lhs lhs, gr_rhs node) // assuming node is a newly malloc'
 	else
 	{
 		lhs->tail->next = node;
+		node->prev = lhs->tail;
 		lhs->size++;
 		lhs->tail = node;
 	}
 }
 
-gr_lhs grInitLHSArray(grammar gr, int size)
+gr_lhs grLHSInitArray(int size)
 {
-	gr->lhsArray = (gr_lhs) malloc(sizeof(__GR_LHS)*size);
+	gr_lhs lhsArray = (gr_lhs) malloc(sizeof(__GR_LHS)*size);
 	
 	struct __GR_LHS initLHS;
+	initLHS->sym = TK_epsilon;
+	initLHS->head = initLHS->tail = NULL;
+	initLHS->size = 0;
 
-	memset(gr->lhsArray, initLHS, )
-	return 
+	memset(lhsArray, initLHS, size);
+
+	return lhsArray;
 }
 
-grammar grInitGrammar(int lhsArraySize)
+grammar grInitGrammar(int lhsArraySize, int numNonTerminals, int numTerminals)
 {
 	grammar g = (grammar) malloc(sizeof(struct __GRAMMAR));
-	g->lhsArray = grInitLHSArray(g, )
+	g->lhsArray = grInitLHSArray(lhsArraySize);
+	g->numNonTerminals = numNonTerminals;
+	g->numTerminals = numTerminals;
+	g->size = lhsArraySize;
+	return g;
 }
 
-readGrammarFromFile(FILE * f)
+grammar loadGrammar(FILE * grammarFile)
+{
+	dt_str buffer[MAX_BUF_SIZE];
+
+	int N;
+	int numNonTerminals;
+	int numTerminals;
+
+	fscanf(grammarFile, "%d", &N);
+	fscanf(grammarFile, "%d", &numNonTerminals);
+	fscanf(grammarFile, "%d", &numTerminals);
+
+	grammar gr = grInitGrammar(N, numNonTerminals, numTerminals);
+
+	int line = 0;
+	int ruleSize;
+	int i;
+
+	dt_id lhsID;
+	dt_id rhsID;
+
+	for(line=0; line<N; line++)
+	{
+		fscanf(grammarFile, "%d", &ruleSize);
+		fscanf(grammarFile, "%d", &lhsID);
+		gr->lhsArray[line]->sym = lhsID;
+		gr->lhsArray[line]->size = ruleSize-1;
+
+		for(i=1; i<=ruleSize-1; i++)
+		{
+			fscanf(grammarFile, "%d", &rhsID);
+			grLHSAppendRHS(gr->lhsArray[line], grRHSMakeNode(rhsID));
+		}
+	}
+
+	return gr;
+}
+
+void printGrammar(grammar gr)
+{
+	int rule;
+
+	for(rule = 0; rule < gr->size; rule++)
+	{
+		printf("%d", gr->lhsArray[rule]->sym);
+		printf(" ===> ");
+
+		gr_rhs mov = gr->lhsArray[rule]->head;
+
+		while(mov!=NULL)
+		{
+			printf("%d ", mov->sym);
+			mov = mov->next;
+		}
+
+		printf("\n");
+	}
+}
+
+firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT)
+{
+	// Implemented as a python script. 
+	// First and Follow sets are calculated and kept in firstNT.txt, firstRules.txt, followNT.txt
+	
+	int i; int k; int nt; int t; int elem;
+	int numNonTerminals;
+	int numRules;
+
+	firstAndFollow ffSets = (firstAndFollow) malloc(sizeof(struct __FIRST_AND_FOLLOW));
+
+	// load first sets of each non terminal
+	// ------------------------------------
+	fscanf(firstNT, "%d", &numNonTerminals);
+	ffSets->firstNT = (set*)malloc(sizeof(set) * numNonTerminals);
+
+	for(i=0; i<numNonTerminals; i++)
+	{
+		ffSets->firstNT[i] = setInit(countLexicalUnits);
+	}
+
+	for(i=0; i<numNonTerminals; i++)
+	{
+		fscanf(firstNT, "%d", &nt);
+		set ptr = ffSets->firstNT[nt-ntBase]; //ntBase defined in lexerDef.h
+		fscanf(firstNT, "%d", &t);
+
+		for(k=0; k<t; k++)
+		{
+			fscanf(firstNT, "%d", &elem);
+			setAdd(ptr, elem);
+		}
+	}
+	fclose(firstNT);
+
+	// load first sets of each rule
+	// ----------------------------
+	fscanf(firstRules, "%d", &numRules);
+	ffSets->firstRules = (set*)malloc(sizeof(set) * numRules);
+
+	for(i=0; i<numRules; i++)
+	{
+		ffSets->firstRules[i] = setInit(countLexicalUnits);
+	}
+
+	for(i=0; i<numRules; i++)
+	{
+		fscanf(firstRules, "%d", &nt);
+		set ptr = ffSets->firstRules[i];
+		fscanf(firstRules, "%d", &t);
+
+		for(k=0; k<t; k++)
+		{
+			fscanf(firstRules, "%d", &elem);
+			setAdd(ptr, elem);
+		}
+	}
+	fclose(firstRules);
+
+
+	// load follow sets of each non terminal
+	// -------------------------------------
+	fscanf(followNT, "%d", &numNonTerminals);
+	ffSets->followNT = (set*)malloc(sizeof(set) * numNonTerminals);
+
+	for(i=0; i<numNonTerminals; i++)
+	{
+		ffSets->followNT[i] = setInit(countLexicalUnits);
+	}
+
+	for(i=0; i<numNonTerminals; i++)
+	{
+		fscanf(followNT, "%d", &nt);
+		set ptr = ffSets->followNT[nt-ntBase]; //ntBase defined in lexerDef.h
+		fscanf(followNT, "%d", &t);
+
+		for(k=0; k<t; k++)
+		{
+			fscanf(followNT, "%d", &elem);
+			setAdd(ptr, elem);
+		}
+	}
+	fclose(followNT);
+
+	return ffSets;
+}
+
+void createParseTable(firstAndFollow F, grammar gr, parseTable T)
+{
+	// assuming table is already constructed with dimensions
+	// number_of_nonterminals x number_of_terminals
+
+	int nt; int t; int rule;
+
+	for (nt=0; nt < gr->numNonTerminals; nt++)
+	{
+		for (t=0; t < gr->numTerminals; t++)
+		{
+			for (rule=0; rule < gr->size; rule++)
+			{
+				if ((gr->lhsArray[rule]->sym == nt))
+				{
+					if((F->firstRules[rule][t] == '1'))
+					{
+						if (T[nt][t]!=-1)
+						{
+							printf("ERROR::parser.c::createParseTable: Case1: parse table already has a rule\n");
+						}
+						else
+						{
+							T[nt][t] = rule;
+						}
+					}
+					else if((F->followNT[nt][t] == '1'))
+					{
+						if (T[nt][t]!=-1)
+						{
+							printf("ERROR::parser.c::createParseTable: Case2: parse table already has a rule\n");
+						}
+						else
+						{
+							T[nt][t] = rule;
+						}	
+					}
+				}
+			}
+		}
+	}
+}
+
