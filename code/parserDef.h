@@ -1,10 +1,12 @@
 #ifndef __PARSERDEF_H
 #define __PARSERDEF_H
 
-#include "lexerDef.h"
+// #include "lexerDef.h"
+#include "lexer.h"
 
 struct __SET;
-// struct __SYMBOL;
+struct __LINKED_LIST_NODE;
+struct __LINKED_LIST;
 struct __GR_RHS;
 struct __GR_LHS;
 struct __GRAMMAR;
@@ -12,7 +14,8 @@ struct __FIRST_AND_FOLLOW;
 struct __PARSE_TREE_NODE;
 struct __PARSE_TREE;
 typedef struct __SET * dt_set;
-// typedef struct __SYMBOL * symbol;
+typedef struct __LINKED_LIST_NODE * dt_linkedListNode;
+typedef struct __LINKED_LIST * dt_linkedList;
 typedef struct __GR_RHS * gr_rhs;
 typedef struct __GR_LHS * gr_lhs;
 typedef struct __GRAMMAR * grammar;
@@ -28,12 +31,23 @@ struct __SET
 	int size;
 };
 
-// struct __SYMBOL;
-// {
-// 	dt_str lexeme;
-// 	dt_id tokID;
-// 	int isTerminal;
-// };
+struct __LINKED_LIST_NODE
+{
+	void * data;
+	int size;
+
+	struct __LINKED_LIST_NODE * next;
+	struct __LINKED_LIST_NODE * prev;
+};
+
+struct __LINKED_LIST
+{
+	// front [0]-[1]-[2]-...-[n] back
+	struct __LINKED_LIST_NODE * front;
+	struct __LINKED_LIST_NODE * back;
+	int count;
+};
+
 
 // grammar
 

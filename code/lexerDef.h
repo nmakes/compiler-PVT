@@ -5,7 +5,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include "linkedListDef.h"
 
 #define BUFFER_SIZE 4092
 #define MAX_LEXEME_SIZE 128
