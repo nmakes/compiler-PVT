@@ -1,4 +1,4 @@
-#include "lexer.h"
+#include "parser.h"
 
 // dt_str inputFile = "samplecode.nv";
 
@@ -18,6 +18,9 @@ void printMenu()
 
 int main(int argc, char const *argv[])
 {
+
+	/*
+
 	dt_str testCaseFileName = strmake(argv[1]);
 	removeComments(testCaseFileName);
 	FILE * f = fopen(testCaseFileName, "r");
@@ -60,6 +63,19 @@ int main(int argc, char const *argv[])
 		}
 
 	}
+
+	*/
+
+	FILE * grammarFile = fopen("grammarFile.txt", "r");
+	grammar g = loadGrammar(grammarFile);
+	// printGrammar(g);
+
+	FILE * firstNT = fopen("firstNT.txt", "r");
+	FILE * firstRules = fopen("firstRules.txt", "r");
+	FILE * followNT = fopen("followNT.txt", "r");
+	
+	firstAndFollow ffSets = computeFirstAndFollowSets(firstNT, firstRules, followNT);
+	printFirstFollowSets(ffSets, g);
 
 	return 0;
 }

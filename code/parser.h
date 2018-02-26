@@ -1,7 +1,10 @@
+#ifndef __PARSER_H
+#define __PARSER_H
+
 #include "parserDef.h"
 
 dt_set setInit(int size);
-void setKill(set s);
+void setKill(dt_set s);
 void setAdd(dt_set s, int idx);
 void setRemove(dt_set s, int idx);
 dt_set setUnion(dt_set s1, dt_set s2);
@@ -9,14 +12,21 @@ dt_set setIntersection(dt_set s1, dt_set s2);
 dt_set setDifference(dt_set s1, dt_set s2);
 
 // grammar functions
-symbol makeSymbol(dt_str lexeme, dt_id tokID, int isTerminal);
+// symbol makeSymbol(dt_str lexeme, dt_id tokID, int isTerminal);
 
-gr_rhs grRHSMakeNode(symbol sym);
+gr_rhs grRHSMakeNode(dt_id sym);
 void grRHSFreeNode(gr_rhs head);
 int grRHSSize(gr_rhs head);
 
-gr_lhs grLHSMakeNode(symbol sym); // assuming sym is a newly malloc'd object
+gr_lhs grLHSMakeNode(dt_id sym); // assuming sym is a newly malloc'd object
 void grLHSAppendRHS(gr_lhs lhs, gr_rhs node); // assuming node is a newly malloc'd object
-gr_lhs grLHSInitArray(int size);
+gr_lhs * grLHSInitArray(int size);
 
 grammar grInitGrammar(int lhsArraySize, int numNonTerminals, int numTerminals);
+grammar loadGrammar(FILE * grammarFile);
+void printGrammar(grammar gr);
+firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT);
+void printFirstFollowSets(firstAndFollow ffSets, grammar gr);
+void createParseTable(firstAndFollow F, grammar gr, parseTable T);
+
+#endif

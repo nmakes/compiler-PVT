@@ -1,5 +1,4 @@
 #include "parserDef.h"
-#include "lexer.h"
 
 #define MAX_BUF_SIZE 256
 
@@ -15,7 +14,7 @@ dt_set setInit(int size)
 	return s;
 }
 
-void setKill(set s)
+void setKill(dt_set s)
 {
 	free(s->elements);
 	free(s);
@@ -55,7 +54,7 @@ dt_set setUnion(dt_set s1, dt_set s2)
 	{
 		dt_set s = setInit(s1->size);
 		int i=0;
-		for(i=0; i<size; i++)
+		for(i=0; i<s1->size; i++)
 		{
 			if((s1->elements[i]=='1') || (s2->elements[i]=='1'))
 				s->elements[i] = '1';
@@ -75,7 +74,7 @@ dt_set setIntersection(dt_set s1, dt_set s2)
 	{
 		dt_set s = setInit(s1->size);
 		int i=0;
-		for(i=0; i<size; i++)
+		for(i=0; i<s1->size; i++)
 		{
 			if((s1->elements[i]=='1') && (s2->elements[i]=='1'))
 				s->elements[i] = '1';
@@ -89,13 +88,13 @@ dt_set setDifference(dt_set s1, dt_set s2)
 {
 	if (s1->size != s2->size)
 	{
-		printf("ERROR::parser.c::setDifference: set s1 and s2 have different universe of discourse (size s1=%d, size s2=%d)\n", s1->size, s2->size);
+		printf("ERROR::parser.c::setDifference: dt_set s1 and s2 have different universe of discourse (size s1=%d, size s2=%d)\n", s1->size, s2->size);
 	}
 	else
 	{
 		dt_set s = setInit(s1->size);
 		int i=0;
-		for(i=0; i<size; i++)
+		for(i=0; i<s1->size; i++)
 		{
 			if((s1->elements[i]=='1') && (s2->elements[i]=='0'))
 				s->elements[i] = '1';
@@ -129,7 +128,7 @@ void grRHSFreeNode(gr_rhs head)
 {
 	if(head->next!=NULL)
 	{
-		freeRHS(head->next);
+		grRHSFreeNode(head->next);
 	}
 	
 	free(head);
@@ -173,27 +172,32 @@ void grLHSAppendRHS(gr_lhs lhs, gr_rhs node) // assuming node is a newly malloc'
 	}
 }
 
-gr_lhs grLHSInitArray(int size)
+gr_lhs * grLHSInitArray(int size)
 {
-	gr_lhs lhsArray = (gr_lhs) malloc(sizeof(__GR_LHS)*size);
-	
-	struct __GR_LHS initLHS;
-	initLHS->sym = TK_epsilon;
-	initLHS->head = initLHS->tail = NULL;
-	initLHS->size = 0;
-
-	memset(lhsArray, initLHS, size);
-
+	gr_lhs * lhsArray = (gr_lhs*) malloc(sizeof(gr_lhs)*size);
 	return lhsArray;
 }
 
 grammar grInitGrammar(int lhsArraySize, int numNonTerminals, int numTerminals)
 {
 	grammar g = (grammar) malloc(sizeof(struct __GRAMMAR));
-	g->lhsArray = grInitLHSArray(lhsArraySize);
+	g->lhsArray = grLHSInitArray(lhsArraySize);
+
+	// printf("running\n");
+
+	int i;
+	for (i=0; i<lhsArraySize; i++)
+	{	
+		// printf("%d\n", i);
+		// printf("yes\n");
+		g->lhsArray[i] = grLHSMakeNode(TK_EXIT);
+		// printf("yes2\n");
+	}
+
 	g->numNonTerminals = numNonTerminals;
 	g->numTerminals = numTerminals;
 	g->size = lhsArraySize;
+	// printf("pass\n");
 	return g;
 }
 
@@ -206,31 +210,39 @@ grammar loadGrammar(FILE * grammarFile)
 	int numTerminals;
 
 	fscanf(grammarFile, "%d", &N);
+	// printf("%d", N);
 	fscanf(grammarFile, "%d", &numNonTerminals);
+	// printf("%d", N);
 	fscanf(grammarFile, "%d", &numTerminals);
+	// printf("%d", N);
 
 	grammar gr = grInitGrammar(N, numNonTerminals, numTerminals);
+
+	// printf("loadgrammarpass\n");
 
 	int line = 0;
 	int ruleSize;
 	int i;
 
-	dt_id lhsID;
-	dt_id rhsID;
+	int lhsID;
+	int rhsID;
 
 	for(line=0; line<N; line++)
 	{
 		fscanf(grammarFile, "%d", &ruleSize);
 		fscanf(grammarFile, "%d", &lhsID);
+
 		gr->lhsArray[line]->sym = lhsID;
-		gr->lhsArray[line]->size = ruleSize-1;
 
 		for(i=1; i<=ruleSize-1; i++)
 		{
 			fscanf(grammarFile, "%d", &rhsID);
 			grLHSAppendRHS(gr->lhsArray[line], grRHSMakeNode(rhsID));
 		}
+		gr->lhsArray[line]->size = ruleSize-1;
 	}
+
+	fclose(grammarFile);
 
 	return gr;
 }
@@ -238,6 +250,8 @@ grammar loadGrammar(FILE * grammarFile)
 void printGrammar(grammar gr)
 {
 	int rule;
+
+	printf("GRAMMAR RULES\n");
 
 	for(rule = 0; rule < gr->size; rule++)
 	{
@@ -256,7 +270,7 @@ void printGrammar(grammar gr)
 	}
 }
 
-firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT)
+firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT)
 {
 	// Implemented as a python script. 
 	// First and Follow sets are calculated and kept in firstNT.txt, firstRules.txt, followNT.txt
@@ -270,7 +284,7 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	// load first sets of each non terminal
 	// ------------------------------------
 	fscanf(firstNT, "%d", &numNonTerminals);
-	ffSets->firstNT = (set*)malloc(sizeof(set) * numNonTerminals);
+	ffSets->firstNT = (dt_set*)malloc(sizeof(dt_set) * numNonTerminals);
 
 	for(i=0; i<numNonTerminals; i++)
 	{
@@ -280,7 +294,7 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numNonTerminals; i++)
 	{
 		fscanf(firstNT, "%d", &nt);
-		set ptr = ffSets->firstNT[nt-ntBase]; //ntBase defined in lexerDef.h
+		dt_set ptr = ffSets->firstNT[nt-ntBase]; //ntBase defined in lexerDef.h
 		fscanf(firstNT, "%d", &t);
 
 		for(k=0; k<t; k++)
@@ -294,7 +308,7 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	// load first sets of each rule
 	// ----------------------------
 	fscanf(firstRules, "%d", &numRules);
-	ffSets->firstRules = (set*)malloc(sizeof(set) * numRules);
+	ffSets->firstRules = (dt_set*)malloc(sizeof(dt_set) * numRules);
 
 	for(i=0; i<numRules; i++)
 	{
@@ -304,7 +318,7 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numRules; i++)
 	{
 		fscanf(firstRules, "%d", &nt);
-		set ptr = ffSets->firstRules[i];
+		dt_set ptr = ffSets->firstRules[i];
 		fscanf(firstRules, "%d", &t);
 
 		for(k=0; k<t; k++)
@@ -319,7 +333,7 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	// load follow sets of each non terminal
 	// -------------------------------------
 	fscanf(followNT, "%d", &numNonTerminals);
-	ffSets->followNT = (set*)malloc(sizeof(set) * numNonTerminals);
+	ffSets->followNT = (dt_set*)malloc(sizeof(dt_set) * numNonTerminals);
 
 	for(i=0; i<numNonTerminals; i++)
 	{
@@ -329,8 +343,13 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numNonTerminals; i++)
 	{
 		fscanf(followNT, "%d", &nt);
-		set ptr = ffSets->followNT[nt-ntBase]; //ntBase defined in lexerDef.h
+		dt_set ptr = ffSets->followNT[nt-ntBase]; //ntBase defined in lexerDef.h
 		fscanf(followNT, "%d", &t);
+
+		if (t==0)
+		{
+			printf("\nfound0\n");
+		}
 
 		for(k=0; k<t; k++)
 		{
@@ -343,7 +362,34 @@ firstAndFollow ComputeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	return ffSets;
 }
 
-void createParseTable(firstAndFollow F, grammar gr, parseTable T)
+void printFirstFollowSets(firstAndFollow ffSets, grammar gr)
+{
+	int i;
+
+	// first of non terminals
+	printf("\nFIRST - NON TERMINALS\n");
+	for(i=0; i<gr->numNonTerminals; i++)
+	{
+		printf("%s\n", ffSets->firstNT[i]->elements);
+	}
+
+	// load first sets of each rule
+	printf("\nFIRST - RULES\n");
+	for(i=0; i<gr->size; i++)
+	{
+		printf("%s\n", ffSets->firstRules[i]->elements);
+	}
+
+	// load follow sets of each non terminal
+	printf("\nFOLLOW - NON TERMINALS\n");
+	for(i=0; i<gr->numNonTerminals; i++)
+	{
+		printf("nt %d ", i+ntBase);
+		printf("%s\n", ffSets->followNT[i]->elements);
+	}
+}
+
+void createParseTable(firstAndFollow F, grammar gr, parseTable T) // redefine the function using book definition
 {
 	// assuming table is already constructed with dimensions
 	// number_of_nonterminals x number_of_terminals
@@ -358,7 +404,7 @@ void createParseTable(firstAndFollow F, grammar gr, parseTable T)
 			{
 				if ((gr->lhsArray[rule]->sym == nt))
 				{
-					if((F->firstRules[rule][t] == '1'))
+					if((F->firstRules[rule]->elements[t] == '1'))
 					{
 						if (T[nt][t]!=-1)
 						{
@@ -369,7 +415,7 @@ void createParseTable(firstAndFollow F, grammar gr, parseTable T)
 							T[nt][t] = rule;
 						}
 					}
-					else if((F->followNT[nt][t] == '1'))
+					else if((F->followNT[nt]->elements[t] == '1'))
 					{
 						if (T[nt][t]!=-1)
 						{

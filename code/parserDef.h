@@ -1,16 +1,19 @@
+#ifndef __PARSERDEF_H
+#define __PARSERDEF_H
+
 #include "lexerDef.h"
 
 #define parseTableRows 50
 #define parseTableCols 50
 
-struct __SET
+struct __SET;
 // struct __SYMBOL;
 struct __GR_RHS;
 struct __GR_LHS;
 struct __GRAMMAR;
 struct __FIRST_AND_FOLLOW;
-typedef struct __SET * dt_set;
 struct __PARSE_TREE;
+typedef struct __SET * dt_set;
 // typedef struct __SYMBOL * symbol;
 typedef struct __GR_RHS * gr_rhs;
 typedef struct __GR_LHS * gr_lhs;
@@ -54,7 +57,7 @@ struct __GR_LHS
 
 struct __GRAMMAR
 {
-	gr_lhs lhsArray; // array of LHS
+	gr_lhs * lhsArray; // array of LHS
 	int size; // size of lhsArray
 	int numTerminals;
 	int numNonTerminals;
@@ -62,14 +65,16 @@ struct __GRAMMAR
 
 struct __FIRST_AND_FOLLOW
 {
-	set * firstNT;
-	set * firstRules;
-	set * followNT;
+	dt_set * firstNT;
+	dt_set * firstRules;
+	dt_set * followNT;
 };
 
 // parse tree
 
 struct __PARSE_TREE
 {
-	
+
 };
+
+#endif

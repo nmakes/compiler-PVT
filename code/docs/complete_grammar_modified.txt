@@ -40,10 +40,10 @@
 <ioStmt> ===> READ OP ID CL SEMICOLON
 <ioStmt> ===> PRINT OP ID CL SEMICOLON
 <funCallStmt> ===> FUNID OP <inputParameterList> CL
-<inputParameterList> ===> <listVar>
+<inputParameterList> ===> <var> <listVar>
 <inputParameterList> ===> _epsilon_
-<listVar> ===> <var>
-<listVar> ===> COMMA <listVar>
+<listVar> ===> _epsilon_
+<listVar> ===> COMMA <var> <listVar>
 <arithmeticExpression> ===> <arithmeticTerm> <other3>
 <other3> ===> <operator_lowPrecedence> <arithmeticTerm> <other3>
 <other3> ===> _epsilon_

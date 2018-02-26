@@ -1,26 +1,27 @@
 // ====================
 // LINKED LIST DATATYPE
 // ====================
-struct __LINKED_LIST_NODE;
-struct __LINKED_LIST;
-typedef struct __LINKED_LIST_NODE * dt_linkedListNode;
-typedef struct __LINKED_LIST * dt_linkedList;
+
+#ifndef __LINKEDLISTDEF_H
+#define __LINKEDLISTDEF_H
 
 struct __LINKED_LIST_NODE
 {
 	void * data;
 	int size;
 
-	dt_linkedListNode next;
-	dt_linkedListNode prev;
+	struct __LINKED_LIST_NODE * next;
+	struct __LINKED_LIST_NODE * prev;
 };
+typedef struct __LINKED_LIST_NODE * dt_linkedListNode;
 
 struct __LINKED_LIST
 {
-	dt_linkedListNode front;
-	dt_linkedListNode back;
+	struct __LINKED_LIST_NODE * front;
+	struct __LINKED_LIST_NODE * back;
 	int count;
 };
+typedef struct __LINKED_LIST * dt_linkedList;
 // front [0]-[1]-[2]-...-[n] back
 
 // dt_linkedListNode llMakeNode(void * data, int size);
@@ -36,3 +37,5 @@ struct __LINKED_LIST
 // void llPopFront(dt_linkedList ll);
 
 // void llPopBack(dt_linkedList ll);
+
+#endif

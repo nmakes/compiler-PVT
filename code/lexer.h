@@ -1,3 +1,6 @@
+#ifndef __LEXERDEF_H
+#define __LEXERDEF_H
+
 #include "lexerDef.h"
 
 // token functions
@@ -22,3 +25,5 @@ void llPopBack(dt_linkedList ll);
 // Lexer Functions
 void removeComments(dt_str testCaseFile);
 dt_token getNextToken(FILE * inputFile, char ** buffer, int * begin, int bufSize); // will be used by parser
+
+#endif

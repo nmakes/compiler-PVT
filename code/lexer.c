@@ -5,7 +5,7 @@ dt_flag shouldRun = True;
 char input;
 int verbose = 0;
 
-char * tokenTable[ENUM_SEP_NONTERMINALS] = {
+char * tokenTable[ENUM_SEP_NONTERMINALS+1] = {
 // TERMINALS
 "ASSIGNOP", "COMMENT", "FUNID", "ID", "NUM", "RNUM", "STR", "END", 
 "INT", "REAL", "STRING", "MATRIX", "MAIN", "SQO", "SQC", "OP", 

@@ -108,6 +108,8 @@ def follow(X, rules, terminals, nonterminals):
 
     locations = []
 
+    # print X
+
     for rule in rules:
         i += 1
 
@@ -256,6 +258,7 @@ ENUM_ID = [
 
 def publishFirstRHS(firstFile, ENUM_ID, rules, terminals, nonterminals):
 
+    print "FIRST - RULES"
 
     with open(firstFile, 'w') as file:
 
@@ -282,13 +285,17 @@ def publishFirstRHS(firstFile, ENUM_ID, rules, terminals, nonterminals):
 
 def publishFirstNT(firstFile, ENUM_ID, rules, terminals, nonterminals):
 
+    print
+    print "FIRST - NON TERMINALS"
+
     with open(firstFile, 'w') as file:
 
         file.write( str(len(nonterminals)) + '\n' )
 
-        for nt in sorted(nonterminals):
+        for (i,nt) in enumerate(sorted(nonterminals)):
             
             firsts = first(nt, rules, terminals, nonterminals)
+            print i+1, nt, "(", ENUM_ID.index(nt[1:-1]), "):", firsts
 
             firstsStr = ''
 
@@ -305,14 +312,17 @@ def publishFirstNT(firstFile, ENUM_ID, rules, terminals, nonterminals):
 
 def publishFollowNT(followFile, ENUM_ID, rules, terminals, nonterminals):
 
+    print
+    print "FOLLOW - NON TERMINALS"
+
     with open(followFile, 'w') as file:
 
         file.write( str(len(nonterminals)) + '\n' )
 
-        for nt in sorted(nonterminals):
+        for (i,nt) in enumerate(sorted(nonterminals)):
             
             follows = follow(nt, rules, terminals, nonterminals)
-            print ENUM_ID.index(nt[1:-1]), nt, ":", follows
+            print i+1, nt, "(", ENUM_ID.index(nt[1:-1]), "):", follows
 
             followsStr = ''
 
@@ -332,7 +342,7 @@ def convertGrammarToIntStream(grammarFile, rules, ENUM_ID, terminals, nontermina
 
     with open(grammarFile, 'w') as file:
 
-        file.write( str(len(rules)) + ' ' + len(nonterminals) + ' ' + len(terminals) + '\n'  )
+        file.write( str(len(rules)) + ' ' + str(len(nonterminals)) + ' ' + str(len(terminals)) + '\n'  )
 
         for rule in rules:
 
@@ -352,3 +362,5 @@ publishFirstRHS('firstRules.txt', ENUM_ID, rules, terminals, nonterminals)
 publishFirstNT('firstNT.txt', ENUM_ID, rules, terminals, nonterminals)
 publishFollowNT('followNT.txt', ENUM_ID, rules, terminals, nonterminals)
 convertGrammarToIntStream('grammarFile.txt', rules, ENUM_ID, terminals, nonterminals)
+
+# print follow('<var>', rules, terminals, nonterminals)
