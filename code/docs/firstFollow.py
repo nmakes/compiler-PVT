@@ -251,7 +251,7 @@ ENUM_ID = [
 "ioStmt", "funCallStmt", "inputParameterList", "listVar", "arithmeticExpression", 
 "other3", "arithmeticTerm", "other4", "factor", "operator_lowPrecedence", 
 "operator_highPrecedence", "booleanExpression", "constrainedVars", "var", "matrix", 
-"rows", "other5", "row", "other6", "remainingColElements", "matrixElement", 
+"rows", "other5", "row", "remainingColElements", "matrixElement", 
 "logicalOp", "relationalOp", "ENUM_SEP_NONTERMINALS"
 ]
 

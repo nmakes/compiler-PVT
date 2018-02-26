@@ -2,16 +2,9 @@
 
 // dt_str inputFile = "samplecode.nv";
 
-void _ENDL()
-{
-	printf("\n");
-}
-# define endl _ENDL()
-
 void printMenu()
 {
-	endl;
-	endl;
+	printf("\n\n");
 	printf("NCC compiler : v1.0");
 	printf("1. ");
 }
@@ -76,6 +69,10 @@ int main(int argc, char const *argv[])
 	
 	firstAndFollow ffSets = computeFirstAndFollowSets(firstNT, firstRules, followNT);
 	printFirstFollowSets(ffSets, g);
+
+	parseTable T = ptInitEmptyTable(g->numNonTerminals, g->numTerminals);
+	createParseTable(ffSets, g, T);
+	printParseTable(T, g);	
 
 	return 0;
 }

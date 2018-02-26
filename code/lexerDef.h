@@ -45,11 +45,11 @@ enum __DT_ID {
 			TK_other2, TK_otherStmts, TK_ioStmt, TK_funCallStmt, TK_inputParameterList, 
 			TK_listVar, TK_arithmeticExpression, TK_other3, TK_arithmeticTerm, TK_other4, 
 			TK_factor, TK_operator_lowPrecedence, TK_operator_highPrecedence, TK_booleanExpression, 
-			TK_constrainedVars, TK_var, TK_matrix, TK_rows, TK_other5, TK_row, TK_other6, 
-			TK_remainingColElements, TK_matrixElement, TK_logicalOp, TK_relationalOp, ENUM_SEP_NONTERMINALS // 44 - 89
+			TK_constrainedVars, TK_var, TK_matrix, TK_rows, TK_other5, TK_row, 
+			TK_remainingColElements, TK_matrixElement, TK_logicalOp, TK_relationalOp, ENUM_SEP_NONTERMINALS // 44 - 88
 
 			// terminals range : 0 - 39	
-			// non terminals range : 44 - 88
+			// non terminals range : 44 - 87
 		};
 typedef enum __DT_ID dt_id;
 
@@ -66,5 +66,6 @@ typedef struct __TOKEN * dt_token;
 #define countTerminals (ENUM_SEP_TERMINALS)
 #define countLexicalUnits (ENUM_SEP_NONTERMINALS)
 #define ntBase (TK_mainFunction)
+#define tBase (TK_ASSIGNOP)
 
 #endif

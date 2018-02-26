@@ -62,22 +62,20 @@
 <constrainedVars> ===> ID
 <constrainedVars> ===> NUM
 <constrainedVars> ===> RNUM
-<var> ===> ID
+<var> ===> ID <matrixElement>
 <var> ===> NUM
 <var> ===> RNUM
-<var> ===> <matrixElement>
 <var> ===> STR
 <var> ===> <matrix>
 <matrix> ===> SQO <rows> SQC
 <rows> ===> <row> <other5>
 <other5> ===> SEMICOLON <row> <other5>
 <other5> ===> _epsilon_
-<row> ===> NUM <other6>
-<other6> ===> <remainingColElements>
-<other6> ===> _epsilon_
+<row> ===> NUM <remainingColElements>
 <remainingColElements> ===> COMMA NUM <remainingColElements>
 <remainingColElements> ===> _epsilon_
-<matrixElement> ===> ID SQO NUM COMMA NUM SQC
+<matrixElement> ===> SQO NUM COMMA NUM SQC
+<matrixElement> ===> _epsilon_
 <logicalOp> ===> AND
 <logicalOp> ===> OR
 <relationalOp> ===> LT

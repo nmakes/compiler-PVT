@@ -25,8 +25,11 @@ gr_lhs * grLHSInitArray(int size);
 grammar grInitGrammar(int lhsArraySize, int numNonTerminals, int numTerminals);
 grammar loadGrammar(FILE * grammarFile);
 void printGrammar(grammar gr);
+void printRule(grammar gr, int rule);
 firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT);
 void printFirstFollowSets(firstAndFollow ffSets, grammar gr);
+parseTable ptInitEmptyTable(int rows, int cols);
 void createParseTable(firstAndFollow F, grammar gr, parseTable T);
+void printParseTable(parseTable T, grammar gr);
 
 #endif

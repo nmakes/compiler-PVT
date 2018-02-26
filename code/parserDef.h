@@ -3,15 +3,13 @@
 
 #include "lexerDef.h"
 
-#define parseTableRows 50
-#define parseTableCols 50
-
 struct __SET;
 // struct __SYMBOL;
 struct __GR_RHS;
 struct __GR_LHS;
 struct __GRAMMAR;
 struct __FIRST_AND_FOLLOW;
+struct __PARSE_TREE_NODE;
 struct __PARSE_TREE;
 typedef struct __SET * dt_set;
 // typedef struct __SYMBOL * symbol;
@@ -19,7 +17,8 @@ typedef struct __GR_RHS * gr_rhs;
 typedef struct __GR_LHS * gr_lhs;
 typedef struct __GRAMMAR * grammar;
 typedef struct __FIRST_AND_FOLLOW * firstAndFollow;
-typedef struct __PARSE_TREE parseTree;
+typedef struct __PARSE_TREE_NODE * parseTreeNode;
+typedef struct __PARSE_TREE * parseTree;
 
 typedef int ** parseTable;
 
@@ -72,9 +71,16 @@ struct __FIRST_AND_FOLLOW
 
 // parse tree
 
+struct __PARSE_TREE_NODE
+{
+	dt_id sym;
+	struct __PARSE_TREE_NODE * parent;
+	dt_linkedList children;
+};
+
 struct __PARSE_TREE
 {
-
+	parseTreeNode root;
 };
 
 #endif

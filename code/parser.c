@@ -2,15 +2,42 @@
 
 #define MAX_BUF_SIZE 256
 
+char * tokenTable2[ENUM_SEP_NONTERMINALS+1] = {
+// TERMINALS
+"ASSIGNOP", "COMMENT", "FUNID", "ID", "NUM", "RNUM", "STR", "END", 
+"INT", "REAL", "STRING", "MATRIX", "MAIN", "SQO", "SQC", "OP", 
+"CL", "SEMICOLON", "COMMA", "IF", "ELSE", "ENDIF", "READ", "PRINT", 
+"FUNCTION", "PLUS", "MINUS", "MUL", "DIV", "SIZE", "AND", "OR", 
+"NOT", "LT", "LE", "EQ", "GT", "GE", "NE", "_epsilon_", "ENUM_SEP_TERMINALS",
+
+// CONTROL SYMBOLS
+"EXIT", "ABRUPTEND", "ENUM_SEP_CONTROL", 
+
+// NON TERMINALS
+"mainFunction", "stmtsAndFunctionDefs", "other1", "stmtOrFunctionDef", "stmt", 
+"functionDef", "parameter_list", "remainingList", "type", "declarationStmt", 
+"var_list", "more_ids", "assignmentStmt_type1", "assignmentStmt_type2", 
+"leftHandSide_singleVar", "leftHandSide_listVar", "rightHandSide_type1", 
+"rightHandSide_type2", "sizeExpression", "ifStmt", "other2", "otherStmts", 
+"ioStmt", "funCallStmt", "inputParameterList", "listVar", "arithmeticExpression", 
+"other3", "arithmeticTerm", "other4", "factor", "operator_lowPrecedence", 
+"operator_highPrecedence", "booleanExpression", "constrainedVars", "var", "matrix", 
+"rows", "other5", "row", "remainingColElements", "matrixElement", 
+"logicalOp", "relationalOp", "ENUM_SEP_NONTERMINALS"
+};
+
 // SET OPERATIONS
 
 dt_set setInit(int size)
 {
+	// printf("setinit: size=%d\n", size);
 	dt_set s = (dt_set) malloc(sizeof(struct __SET));
 	s->elements = (dt_str) malloc(sizeof(char)*(size+1));
 	s->size = size;
+	// printf("setinit: retsize=%lu\n", strlen(s->elements));
 
 	memset(s->elements, '0', size);
+	s->elements[size-1] = 0;
 	return s;
 }
 
@@ -270,6 +297,21 @@ void printGrammar(grammar gr)
 	}
 }
 
+void printRule(grammar gr, int rule)
+{
+	printf("%s", tokenTable2[gr->lhsArray[rule]->sym]);
+	printf(" ===> ");
+
+	gr_rhs mov = gr->lhsArray[rule]->head;
+
+	while(mov!=NULL)
+	{
+		printf("%s ", tokenTable2[mov->sym]);
+		mov = mov->next;
+	}
+	printf("\n");
+}
+
 firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE * followNT)
 {
 	// Implemented as a python script. 
@@ -294,6 +336,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numNonTerminals; i++)
 	{
 		fscanf(firstNT, "%d", &nt);
+		printf("-----NON TERMINAL : %d\n", nt);
 		dt_set ptr = ffSets->firstNT[nt-ntBase]; //ntBase defined in lexerDef.h
 		fscanf(firstNT, "%d", &t);
 
@@ -338,6 +381,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numNonTerminals; i++)
 	{
 		ffSets->followNT[i] = setInit(countLexicalUnits);
+		// printf("built: nt: %d , len: %lu \n", i, strlen(ffSets->followNT[i]->elements));
 	}
 
 	for(i=0; i<numNonTerminals; i++)
@@ -345,11 +389,6 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 		fscanf(followNT, "%d", &nt);
 		dt_set ptr = ffSets->followNT[nt-ntBase]; //ntBase defined in lexerDef.h
 		fscanf(followNT, "%d", &t);
-
-		if (t==0)
-		{
-			printf("\nfound0\n");
-		}
 
 		for(k=0; k<t; k++)
 		{
@@ -368,25 +407,50 @@ void printFirstFollowSets(firstAndFollow ffSets, grammar gr)
 
 	// first of non terminals
 	printf("\nFIRST - NON TERMINALS\n");
+	printf("%-10s   %-22s\n", "NT_no", "first set");
 	for(i=0; i<gr->numNonTerminals; i++)
 	{
-		printf("%s\n", ffSets->firstNT[i]->elements);
+		printf("  %-10d %-20s\n", i+ntBase, ffSets->firstNT[i]->elements);
 	}
 
 	// load first sets of each rule
 	printf("\nFIRST - RULES\n");
+	printf("%-10s   %-22s\n", "rule_no", "first set");
 	for(i=0; i<gr->size; i++)
 	{
-		printf("%s\n", ffSets->firstRules[i]->elements);
+		printf("  %-10d %-20s\n", i+1, ffSets->firstRules[i]->elements);
 	}
 
 	// load follow sets of each non terminal
 	printf("\nFOLLOW - NON TERMINALS\n");
+	printf("%-10s   %-22s\n", "NT_no", "followNT set");
 	for(i=0; i<gr->numNonTerminals; i++)
 	{
-		printf("nt %d ", i+ntBase);
-		printf("%s\n", ffSets->followNT[i]->elements);
+		printf("  %-10d %-20s\n", i+ntBase, ffSets->followNT[i]->elements);
 	}
+}
+
+parseTable ptInitEmptyTable(int rows, int cols)
+{
+	parseTable pt;
+
+	pt = (parseTable) malloc(sizeof(int *) * rows);
+
+	int i=0; int j=0;
+	for(i=0; i<rows; i++)
+	{
+		pt[i] = (int *) malloc(sizeof(int) * cols);
+	}
+
+	for(i=0; i<rows; i++)
+	{
+		for(j=0; j<rows; j++)
+		{
+			pt[i][j] = -1;
+		}
+	}
+
+	return pt;
 }
 
 void createParseTable(firstAndFollow F, grammar gr, parseTable T) // redefine the function using book definition
@@ -396,39 +460,125 @@ void createParseTable(firstAndFollow F, grammar gr, parseTable T) // redefine th
 
 	int nt; int t; int rule;
 
-	for (nt=0; nt < gr->numNonTerminals; nt++)
+	// for (nt=0; nt < gr->numNonTerminals; nt++)
+	// {
+	// 	for (t=0; t < gr->numTerminals; t++)
+	// 	{
+	// 		for (rule=0; rule < gr->size; rule++)
+	// 		{
+	// 			if ((gr->lhsArray[rule]->sym == nt))
+	// 			{
+	// 				if((F->firstRules[rule]->elements[t] == '1'))
+	// 				{
+	// 					if (T[nt][t]!=-1)
+	// 					{
+	// 						printf("ERROR::parser.c::createParseTable: Case1: parse table already has a rule\n");
+	// 					}
+	// 					else
+	// 					{
+	// 						T[nt][t] = rule;
+	// 					}
+	// 				}
+	// 				else if((F->followNT[nt]->elements[t] == '1'))
+	// 				{
+	// 					if (T[nt][t]!=-1)
+	// 					{
+	// 						printf("ERROR::parser.c::createParseTable: Case2: parse table already has a rule\n");
+	// 					}
+	// 					else
+	// 					{
+	// 						T[nt][t] = rule;
+	// 					}	
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	dt_str firstRuleSet, followNTSet;
+
+	for(rule=0; rule<gr->size; rule++) // for each production rule A -> alpha do the following
 	{
-		for (t=0; t < gr->numTerminals; t++)
+		nt = gr->lhsArray[rule]->sym;
+		nt = nt - ntBase;
+
+		firstRuleSet = F->firstRules[rule]->elements;
+		followNTSet = F->followNT[nt]->elements;
+
+		// 1. for each terminal a in first(alpha), add A->alpha rule to T[A,a]
+		for(t=0; t<gr->numTerminals; t++)
 		{
-			for (rule=0; rule < gr->size; rule++)
+			if(firstRuleSet[t]=='1')
 			{
-				if ((gr->lhsArray[rule]->sym == nt))
+				if(T[nt][t]!=-1)
 				{
-					if((F->firstRules[rule]->elements[t] == '1'))
+					printf("\n");
+					printf("ERROR::parser.c::createParseTable:1: T[nt][t] is not -1\n");
+					printf("nt=%d (%s), t=%d (%s), rule=%d\n", nt, tokenTable2[nt+ntBase], t, tokenTable2[t+tBase],rule);
+					printRule(gr, rule);
+				}
+				else
+				{
+					T[nt][t] = rule;
+				}
+			}
+		}
+
+		// 2. if eps in first(alpha) then for each terminal b in follow(A), add A -> alpha to T[A,b].
+		// if eps in first(alpha) && $ in follow(A), add A -> alpha to T[A,$] as well.
+		
+		if(firstRuleSet[TK_epsilon]=='1') // if eps in first(alpha)
+		{
+			for(t=0; t<gr->numTerminals; t++)
+			{
+				if(followNTSet[t]=='1') // then for each terminal b in follow(A)
+				{
+					// add A -> alpha to T[A,b]
+					if(T[nt][t]!=-1)
 					{
-						if (T[nt][t]!=-1)
-						{
-							printf("ERROR::parser.c::createParseTable: Case1: parse table already has a rule\n");
-						}
-						else
-						{
-							T[nt][t] = rule;
-						}
+						printf("\n");
+						printf("ERROR::parser.c::createParseTable:2: T[nt][t] is not -1\n");
+						printf("nt=%d (%s), t=%d (%s), rule=%d\n", nt, tokenTable2[nt+ntBase], t, tokenTable2[t+tBase],rule);
+						printRule(gr, rule);
 					}
-					else if((F->followNT[nt]->elements[t] == '1'))
+					else
 					{
-						if (T[nt][t]!=-1)
-						{
-							printf("ERROR::parser.c::createParseTable: Case2: parse table already has a rule\n");
-						}
-						else
-						{
-							T[nt][t] = rule;
-						}	
+						T[nt][t] = rule;
 					}
 				}
 			}
 		}
 	}
+}
+
+void printParseTable(parseTable T, grammar gr)
+{
+	int nt, t;
+
+	printf("\nPARSE TABLE\n");
+
+	printf("\n%2s | ", "NT");
+	
+	for(t=0; t < gr->numTerminals; t++)
+	{
+		printf("%4d", t+tBase);
+	}
+
+	printf("\n-----");
+	
+	for(t=0; t < gr->numTerminals; t++)
+	{
+		printf("----");
+	}
+	
+	for(nt=0; nt < gr->numNonTerminals; nt++)
+	{
+		printf("\n%2d | ", nt+ntBase);
+		for(t=0; t < gr->numTerminals; t++)
+		{
+			printf("%4d", T[nt][t]);
+		}
+	}
+	printf("\n");
 }
 
