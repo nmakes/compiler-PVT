@@ -31,5 +31,6 @@ void printFirstFollowSets(firstAndFollow ffSets, grammar gr);
 parseTable ptInitEmptyTable(int rows, int cols);
 void createParseTable(firstAndFollow F, grammar gr, parseTable T);
 void printParseTable(parseTable T, grammar gr);
+parseTree parseInputSourceCode(char *testcaseFile, parseTable T);
 
 #endif

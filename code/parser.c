@@ -336,7 +336,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 	for(i=0; i<numNonTerminals; i++)
 	{
 		fscanf(firstNT, "%d", &nt);
-		printf("-----NON TERMINAL : %d\n", nt);
+		// printf("-----NON TERMINAL : %d\n", nt);
 		dt_set ptr = ffSets->firstNT[nt-ntBase]; //ntBase defined in lexerDef.h
 		fscanf(firstNT, "%d", &t);
 
@@ -582,3 +582,35 @@ void printParseTable(parseTable T, grammar gr)
 	printf("\n");
 }
 
+parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T)
+{
+	FILE * inputFile = fopen(testCaseFileName, "r");
+
+	int shouldRun = 1;
+
+	dt_token tok;
+	dt_str buf = (dt_str) malloc(sizeof(char) * BUFFER_SIZE);
+	memset(buf,'\0',BUFFER_SIZE);
+
+	dt_token tk = NULL;
+
+	while(!feof(inputFile) && shouldRun)
+	{
+		while(buf!='\0'){
+			tk = (dt_token) getNextToken(inputFile, &buf, &begin, BUFFER_SIZE);
+			if(tk!=NULL)
+			{
+				if(tk->tokenID==TK_EXIT || tk->tokenID==TK_ABRUPTEND)
+				{
+					break;
+				}
+				printToken(tk);
+			}
+			else
+			{
+				shouldRun=0;
+			}
+		}
+
+	}
+}
