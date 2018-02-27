@@ -1,0 +1,3 @@
+clear
+make
+valgrind ./ncc

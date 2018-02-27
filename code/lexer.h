@@ -22,6 +22,6 @@ dt_str strslice(dt_str s, int beg, int end); // s[beg:end] inclusive
 
 // Lexer Functions
 void removeComments(dt_str testCaseFile);
-dt_token getNextToken(FILE * inputFile, char ** buffer, int * begin, int bufSize); // will be used by parser
+dt_token getNextToken(FILE * inputFile, char ** buffer, int * begin, int bufSize, dt_str BUFFERBASE); // will be used by parser
 
 #endif

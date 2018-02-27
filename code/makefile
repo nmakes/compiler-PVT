@@ -1,2 +1,2 @@
 all:
-	gcc -g lexer.c parser.c driver.c -o ncc
+	gcc -g -o ncc lexer.c parser.c driver.c

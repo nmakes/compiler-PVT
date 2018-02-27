@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define BUFFER_SIZE 4092
+#define BUFFER_SIZE 32
 #define MAX_LEXEME_SIZE 128
 #define HASH_X 3
 #define HASH_M 39
@@ -48,7 +48,7 @@ enum __DT_ID {
 			TK_listVar, TK_arithmeticExpression, TK_other3, TK_arithmeticTerm, TK_other4, 
 			TK_factor, TK_operator_lowPrecedence, TK_operator_highPrecedence, TK_booleanExpression, 
 			TK_constrainedVars, TK_var, TK_matrix, TK_rows, TK_other5, TK_row, 
-			TK_remainingColElements, TK_matrixElement, TK_logicalOp, TK_relationalOp, ENUM_SEP_NONTERMINALS // 44 - 88
+			TK_remainingColElements, TK_matrixElementExtension, TK_logicalOp, TK_relationalOp, ENUM_SEP_NONTERMINALS // 44 - 88
 
 			// terminals range : 0 - 39	
 			// non terminals range : 44 - 87
@@ -63,6 +63,11 @@ struct __TOKEN
 	int lineNo;
 };
 typedef struct __TOKEN * dt_token;
+
+struct __STACK
+{
+	dt_id tokenID;
+};
 
 #define countNonTerminals (ENUM_SEP_NONTERMINALS - TK_mainFunction)
 #define countTerminals (ENUM_SEP_TERMINALS)

@@ -28,7 +28,7 @@ char * tokenTable[ENUM_SEP_NONTERMINALS+1] = {
 "ioStmt", "funCallStmt", "inputParameterList", "listVar", "arithmeticExpression", 
 "other3", "arithmeticTerm", "other4", "factor", "operator_lowPrecedence", 
 "operator_highPrecedence", "booleanExpression", "constrainedVars", "var", "matrix", 
-"rows", "other5", "row", "remainingColElements", "matrixElement", 
+"rows", "other5", "row", "remainingColElements", "matrixElementExtension", 
 "logicalOp", "relationalOp", "ENUM_SEP_NONTERMINALS"
 };
 
@@ -49,10 +49,13 @@ dt_str strmake(const char * src)
 {
 	int sl = strlen(src);
 	dt_str dst = (dt_str) malloc(sl+1);
+	memset(dst, 0, sl+1);
+
+	// printf("STRMAKE STRLEN %lu", strlen(dst));
 	
 	if (dst==NULL)
 	{
-		printf("ERROR::helpers.h::strmake(): couldn't malloc dst");
+		printf("ERROR::lexer.c::strmake(): couldn't malloc dst");
 		return NULL;
 	}
 	else
@@ -63,7 +66,7 @@ dt_str strmake(const char * src)
 		{
 			dst[i] = src[i];
 		}
-		dst[i+1] = '\0';
+		// dst[i+1] = '\0';
 
 		return dst;
 	}
@@ -344,12 +347,13 @@ void removeComments(dt_str testCaseFileName) // will be printed only on the cons
 
 FILE * getStream(FILE * f, dt_str * buffer, int bufSize)
 {
-	memset(*buffer, 0, bufSize);
+	// buffer = (dt_str)malloc(sizeof(bufSize));
+	// memset(buffer, 0, bufSize);
 	fread(*buffer,bufSize-1,1,f);
 	return f;
 }
 
-dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSize)
+dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSize, dt_str BUFFERBASE)
 {
 	dt_str lexeme = (dt_str)malloc(MAX_LEXEME_SIZE * sizeof(char));
 	memset(lexeme, 0, MAX_LEXEME_SIZE);
@@ -364,6 +368,8 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 		if(*(*buffer)=='\0') // if buffer is empty
 		{
 			// fill the buffer
+			memset(BUFFERBASE, 0, bufSize);
+			*buffer = BUFFERBASE;
 			getStream(inputFile, buffer, bufSize);
 			// fread(*buffer,bufSize,1,inputFile);
 		}
@@ -528,7 +534,9 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				{
 					// transit back to state 1
 					s = 1;
-					lexeme = (char*)realloc(lexeme, MAX_LEXEME_SIZE * sizeof(char));
+					// lexeme = (char*)realloc(lexeme, MAX_LEXEME_SIZE * sizeof(char));
+					fwd = 0;
+					memset(lexeme, 0, MAX_LEXEME_SIZE);
 					// comment is discarded automataically
 					lastState = s;
 				}

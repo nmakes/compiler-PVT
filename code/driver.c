@@ -15,8 +15,8 @@ void printMenu()
 int main(int argc, char const *argv[])
 {
 
-	dt_str tcfile = "testcases/testcase1.txt";
-
+	dt_str tcfile = "testcases/testcase5.txt";
+	
 	/*
 
 	dt_str testCaseFileName = strmake(argv[1]);
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
 	*/
 
 	// dt_str testCaseFileName = strmake(argv[1]);
-	dt_str testCaseFileName = strmake(tcfile);
+	dt_str testCaseFileName = tcfile;
 	removeComments(testCaseFileName);
 
 	FILE * grammarFile = fopen("grammarFile.txt", "r");
@@ -77,15 +77,18 @@ int main(int argc, char const *argv[])
 	FILE * followNT = fopen("followNT.txt", "r");
 	
 	firstAndFollow ffSets = computeFirstAndFollowSets(firstNT, firstRules, followNT);
-	printFirstFollowSets(ffSets, g);
+	// printFirstFollowSets(ffSets, g);
 
 	parseTable T = ptInitEmptyTable(g->numNonTerminals, g->numTerminals);
 	createParseTable(ffSets, g, T);
-	printParseTable(T, g);
+	// printParseTable(T, g);
 
 	printf("\n");
 
 	parseInputSourceCode(testCaseFileName, T, g);
+	freeParseTable(T);
+
+	printf("\nEXITING MAIN FUNCTION\n");
 
 	return 0;
 }

@@ -51,5 +51,6 @@ parseTable ptInitEmptyTable(int rows, int cols);
 void createParseTable(firstAndFollow F, grammar gr, parseTable T);
 void printParseTable(parseTable T, grammar gr);
 parseTree parseInputSourceCode(char *testcaseFile, parseTable T, grammar gr);
+void freeParseTable(parseTable T);
 
 #endif

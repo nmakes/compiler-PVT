@@ -62,7 +62,7 @@
 <constrainedVars> ===> ID
 <constrainedVars> ===> NUM
 <constrainedVars> ===> RNUM
-<var> ===> ID <matrixElement>
+<var> ===> ID <matrixElementExtension>
 <var> ===> NUM
 <var> ===> RNUM
 <var> ===> STR
@@ -74,8 +74,8 @@
 <row> ===> NUM <remainingColElements>
 <remainingColElements> ===> COMMA NUM <remainingColElements>
 <remainingColElements> ===> _epsilon_
-<matrixElement> ===> SQO NUM COMMA NUM SQC
-<matrixElement> ===> _epsilon_
+<matrixElementExtension> ===> SQO NUM COMMA NUM SQC
+<matrixElementExtension> ===> _epsilon_
 <logicalOp> ===> AND
 <logicalOp> ===> OR
 <relationalOp> ===> LT

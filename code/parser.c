@@ -25,7 +25,7 @@ char * tokenTable2[ENUM_SEP_NONTERMINALS+1] = {
 "ioStmt", "funCallStmt", "inputParameterList", "listVar", "arithmeticExpression", 
 "other3", "arithmeticTerm", "other4", "factor", "operator_lowPrecedence", 
 "operator_highPrecedence", "booleanExpression", "constrainedVars", "var", "matrix", 
-"rows", "other5", "row", "remainingColElements", "matrixElement", 
+"rows", "other5", "row", "remainingColElements", "matrixElementExtension", 
 "logicalOp", "relationalOp", "ENUM_SEP_NONTERMINALS"
 };
 
@@ -617,7 +617,7 @@ parseTable ptInitEmptyTable(int rows, int cols)
 
 	for(i=0; i<rows; i++)
 	{
-		for(j=0; j<rows; j++)
+		for(j=0; j<cols; j++)
 		{
 			pt[i][j] = -1;
 		}
@@ -755,28 +755,42 @@ void printParseTable(parseTable T, grammar gr)
 	printf("\n");
 }
 
+void freeParseTable(parseTable T)
+{
+	free(T);
+}
+
 parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr)
 {
+	// printf("RUNNING");
+	// fflush(stdin);
+	parseTree pt = NULL;
 	dt_token inputTOK = NULL;
 
+	
 	FILE * inputFile = fopen(testCaseFileName, "r");
 
 	int shouldRun = 1;
 	int shouldExpand = 1;
 	int begin = 0;
-	parseTree pt = NULL;
 
 	// buffer
+
 	dt_str buf = (dt_str) malloc(sizeof(char) * BUFFER_SIZE);
 	memset(buf,'\0',BUFFER_SIZE);
+	dt_str movingBuffer = buf;
+
 
 	// token
 	dt_id * Abase = (dt_id*) malloc(sizeof(dt_id));
 	*Abase = TK_EXIT; // base token
+	
 	dt_id * a = (dt_id*) malloc(sizeof(dt_id));
 	dt_id * A = NULL;
 	dt_token top = NULL;
 	
+	printf("running");
+
 	// stack
 	dt_linkedList stack = stackInit();
 	stackPush(stack, Abase, sizeof(dt_id));
@@ -786,13 +800,17 @@ parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr
 	*Abase = TK_mainFunction;
 	stackPush(stack, Abase, sizeof(dt_id));
 
+
+	printf("\nrun%d\n",1);
+
 	int rule;
+
 
 	while(!feof(inputFile) && shouldRun)
 	{
 		while(buf!='\0')
 		{
-			inputTOK = (dt_token) getNextToken(inputFile, &buf, &begin, BUFFER_SIZE);
+			inputTOK = (dt_token) getNextToken(inputFile, &movingBuffer, &begin, BUFFER_SIZE, buf);
 			shouldExpand = 1;
 
 			if(inputTOK!=NULL)
@@ -800,10 +818,10 @@ parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr
 				while(shouldExpand)
 				{
 					printf("stacktop: %p, bot: %p, stackcount: %d\n", stack->back, stack->front, stack->count);
-					top = (dt_token)stackTopNode(stack)->data;
+					// top = (dt_token)stackTopNode(stack)->data;
 					A = (dt_id*) malloc(sizeof(dt_id));
 					a = (dt_id*) malloc(sizeof(dt_id));
-					*A = top->tokenID;
+					*A = *((dt_id*)stackTopNode(stack)->data);
 					*a = inputTOK->tokenID;
 
 					printf("TOP: %s\nINP: %s\n\n", tokenTable2[*A], tokenTable2[*a]);
@@ -836,6 +854,7 @@ parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr
 
 						if(rule==-1)
 						{
+							printf("DEBUG: *A=%s, *a=%s\n", tokenTable2[*A], tokenTable2[*a]);
 							printf("%d: Syntax Error: The token %s for lexeme %s does not match at line %d. The token %s is not a valid member of %s\n", inputTOK->lineNo, tokenTable2[*a], inputTOK->lexeme, inputTOK->lineNo, tokenTable2[*a], tokenTable2[*A]);
 							return NULL;
 						}
@@ -862,6 +881,6 @@ parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr
 			}
 		}
 	}
-
+	
 	return pt;
 }
