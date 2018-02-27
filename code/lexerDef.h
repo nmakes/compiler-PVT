@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #ifndef __LEXERDEF_H
 #define __LEXERDEF_H
 
@@ -9,7 +12,7 @@
 #define BUFFER_SIZE 4092
 #define MAX_LEXEME_SIZE 128
 #define HASH_X 3
-#define HASH_M 30
+#define HASH_M 39
 #define EOFchar '$'
 
 enum __DT_FLAG {False, True};

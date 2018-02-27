@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #ifndef __LEXER_H
 #define __LEXER_H
 
@@ -9,6 +12,9 @@ void printToken(dt_token token);
 dt_NUM getNUM(dt_str lexeme);
 dt_NUM getRNUM(dt_str lexeme);
 dt_id getTokID(dt_str lexeme);
+
+int isTerminal(dt_id x);
+int isNonTerminal(dt_id x);
 
 // string functions declarations
 dt_str strmake(const char * src);

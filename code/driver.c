@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #include "parser.h"
 
 // dt_str inputFile = "samplecode.nv";
@@ -11,6 +14,8 @@ void printMenu()
 
 int main(int argc, char const *argv[])
 {
+
+	dt_str tcfile = "testcases/testcase1.txt";
 
 	/*
 
@@ -59,6 +64,10 @@ int main(int argc, char const *argv[])
 
 	*/
 
+	// dt_str testCaseFileName = strmake(argv[1]);
+	dt_str testCaseFileName = strmake(tcfile);
+	removeComments(testCaseFileName);
+
 	FILE * grammarFile = fopen("grammarFile.txt", "r");
 	grammar g = loadGrammar(grammarFile);
 	// printGrammar(g);
@@ -72,7 +81,11 @@ int main(int argc, char const *argv[])
 
 	parseTable T = ptInitEmptyTable(g->numNonTerminals, g->numTerminals);
 	createParseTable(ffSets, g, T);
-	printParseTable(T, g);	
+	printParseTable(T, g);
+
+	printf("\n");
+
+	parseInputSourceCode(testCaseFileName, T, g);
 
 	return 0;
 }

@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #include "parserDef.h"
 
 #define MAX_BUF_SIZE 256
@@ -262,12 +265,12 @@ void llPopBack(dt_linkedList ll)
 	===========================
 */
 
-void * stackInit()
+dt_linkedList stackInit()
 {
 	return llInit();
 }
 
-void * stackTopNode(dt_linkedList stack)
+dt_linkedListNode stackTopNode(dt_linkedList stack)
 {
 	return stack->back;
 }
@@ -280,6 +283,20 @@ void stackPush(dt_linkedList stack, void * data, int size) // assuming data is n
 void stackPop(dt_linkedList stack)
 {
 	llPopBack(stack);
+}
+
+void stackPrintIDs(dt_linkedList stack)
+{
+	printf("\n~~~ STACK ~~~\n");
+	dt_linkedListNode mov = stack->back;
+
+	while(mov!=NULL)
+	{
+		printf("%s\n", tokenTable2[*((dt_id*)(mov->data))]);
+		mov = mov->prev;
+	}
+
+	printf("~~~~~~~~~~~~\n\n");
 }
 
 
@@ -486,7 +503,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 
 	for(i=0; i<numNonTerminals; i++)
 	{
-		ffSets->firstNT[i] = setInit(countLexicalUnits);
+		ffSets->firstNT[i] = setInit(countTerminals+1);
 	}
 
 	for(i=0; i<numNonTerminals; i++)
@@ -511,7 +528,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 
 	for(i=0; i<numRules; i++)
 	{
-		ffSets->firstRules[i] = setInit(countLexicalUnits);
+		ffSets->firstRules[i] = setInit(countTerminals+1);
 	}
 
 	for(i=0; i<numRules; i++)
@@ -536,7 +553,7 @@ firstAndFollow computeFirstAndFollowSets(FILE * firstNT, FILE * firstRules, FILE
 
 	for(i=0; i<numNonTerminals; i++)
 	{
-		ffSets->followNT[i] = setInit(countLexicalUnits);
+		ffSets->followNT[i] = setInit(countTerminals+1);
 		// printf("built: nt: %d , len: %lu \n", i, strlen(ffSets->followNT[i]->elements));
 	}
 
@@ -713,7 +730,7 @@ void printParseTable(parseTable T, grammar gr)
 
 	printf("\nPARSE TABLE\n");
 
-	printf("\n%2s | ", "NT");
+	printf("\n%2s \\T", "NT");
 	
 	for(t=0; t < gr->numTerminals; t++)
 	{
@@ -738,38 +755,113 @@ void printParseTable(parseTable T, grammar gr)
 	printf("\n");
 }
 
-parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T)
+parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr)
 {
+	dt_token inputTOK = NULL;
+
 	FILE * inputFile = fopen(testCaseFileName, "r");
 
 	int shouldRun = 1;
+	int shouldExpand = 1;
 	int begin = 0;
+	parseTree pt = NULL;
 
-	// token
-	dt_token tk = NULL;
+	// buffer
 	dt_str buf = (dt_str) malloc(sizeof(char) * BUFFER_SIZE);
 	memset(buf,'\0',BUFFER_SIZE);
 
+	// token
+	dt_id * Abase = (dt_id*) malloc(sizeof(dt_id));
+	*Abase = TK_EXIT; // base token
+	dt_id * a = (dt_id*) malloc(sizeof(dt_id));
+	dt_id * A = NULL;
+	dt_token top = NULL;
+	
 	// stack
 	dt_linkedList stack = stackInit();
+	stackPush(stack, Abase, sizeof(dt_id));
+
+	// push main into the stack
+	Abase = (dt_id*) malloc(sizeof(dt_id));
+	*Abase = TK_mainFunction;
+	stackPush(stack, Abase, sizeof(dt_id));
+
+	int rule;
 
 	while(!feof(inputFile) && shouldRun)
 	{
-		while(buf!='\0'){
-			tk = (dt_token) getNextToken(inputFile, &buf, &begin, BUFFER_SIZE);
-			if(tk!=NULL)
+		while(buf!='\0')
+		{
+			inputTOK = (dt_token) getNextToken(inputFile, &buf, &begin, BUFFER_SIZE);
+			shouldExpand = 1;
+
+			if(inputTOK!=NULL)
 			{
-				if(tk->tokenID==TK_EXIT || tk->tokenID==TK_ABRUPTEND)
+				while(shouldExpand)
 				{
-					break;
+					printf("stacktop: %p, bot: %p, stackcount: %d\n", stack->back, stack->front, stack->count);
+					top = (dt_token)stackTopNode(stack)->data;
+					A = (dt_id*) malloc(sizeof(dt_id));
+					a = (dt_id*) malloc(sizeof(dt_id));
+					*A = top->tokenID;
+					*a = inputTOK->tokenID;
+
+					printf("TOP: %s\nINP: %s\n\n", tokenTable2[*A], tokenTable2[*a]);
+					stackPrintIDs(stack);
+
+					if(*A==TK_epsilon)
+					{
+						stackPop(stack);
+					}
+					else if(isTerminal(*A) && (*A==*a)) // stack top has a terminal equal to the input terminal
+					{	
+						// pop it off the stack and get next token
+						stackPop(stack);
+						shouldExpand = 0;
+					}
+					else if(isTerminal(*A) && (*A!=*a))
+					{
+						printf("%d: Syntax Error: The token %s for lexeme %s does not match at line %d. The expected token here is %s\n", inputTOK->lineNo, tokenTable2[*a], inputTOK->lexeme, inputTOK->lineNo, tokenTable2[*A]);
+						return NULL;
+					}
+					else if((*A==*a) && (*A==TK_EXIT))
+					{
+						printf("SUCCESSFUL COMPILATION!\n");
+						return NULL;
+					}
+					else
+					{
+						// expand
+						rule = T[*A-ntBase][*a];
+
+						if(rule==-1)
+						{
+							printf("%d: Syntax Error: The token %s for lexeme %s does not match at line %d. The token %s is not a valid member of %s\n", inputTOK->lineNo, tokenTable2[*a], inputTOK->lexeme, inputTOK->lineNo, tokenTable2[*a], tokenTable2[*A]);
+							return NULL;
+						}
+						else
+						{
+							printRule(gr, rule);
+							gr_rhs mov = gr->lhsArray[rule]->tail;
+							stackPop(stack);
+
+							while(mov!=NULL)
+							{
+								dt_id * Arule = (dt_id*) malloc(sizeof(dt_id));
+								*Arule = mov->sym;
+								stackPush(stack, Arule, sizeof(dt_id));
+								mov = mov->prev;
+							}
+						}
+					}
 				}
-				printToken(tk);
 			}
 			else
 			{
 				shouldRun=0;
 			}
 		}
-
 	}
+
+	return pt;
 }

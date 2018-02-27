@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #include "lexerDef.h"
 
 dt_flag shouldRun = True;
@@ -179,35 +182,35 @@ dt_id getTokID(dt_str lexeme)
 	
 	switch(hashValue)
 	{
-		case 11:
+		case 5:
 			if(!strcmp(lexeme, "end"))
 				return TK_END;
 			else
 				return TK_ID;
 			break;
 
-		case 9:
+		case 36:
 			if(!strcmp(lexeme, "int"))
 				return TK_INT;
 			else
 				return TK_ID;
 			break;
 
-		case 6:
+		case 33:
 			if(!strcmp(lexeme, "real"))
 				return TK_REAL;
 			else
 				return TK_ID;
 			break;
 
-		case 13:
+		case 4:
 			if(!strcmp(lexeme, "string"))
 				return TK_STRING;
 			else
 				return TK_ID;
 			break;
 
-		case 7:
+		case 28:
 			if(!strcmp(lexeme, "matrix"))
 				return TK_MATRIX;
 			else
@@ -221,30 +224,37 @@ dt_id getTokID(dt_str lexeme)
 				return TK_ID;
 			break;
 
-		case 17:
+		case 14:
 			if(!strcmp(lexeme, "else"))
 				return TK_ELSE;
 			else
 				return TK_ID;
 			break;
 
-		case 8:
+		case 26:
 			if(!strcmp(lexeme, "endif"))
 				return TK_ENDIF;
 			else
 				return TK_ID;
 			break;
 
-		case 0:
+		case 12:
 			if(!strcmp(lexeme, "read"))
 				return TK_READ;
 			else
 				return TK_ID;
 			break;
 
-		case 25:
+		case 37:
 			if(!strcmp(lexeme, "print"))
 				return TK_PRINT;
+			else
+				return TK_ID;
+			break;
+
+		case 0:
+			if(!strcmp(lexeme, "function"))
+				return TK_FUNCTION;
 			else
 				return TK_ID;
 			break;
@@ -252,6 +262,24 @@ dt_id getTokID(dt_str lexeme)
 		default:
 			return TK_ID;
 	}
+}
+
+int isTerminal(dt_id x)
+{
+	if(x>=tBase && x<ENUM_SEP_TERMINALS)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+int isNonTerminal(dt_id x)
+{
+	if(x>=ntBase && x<ENUM_SEP_NONTERMINALS)
+	{
+		return 1;
+	}
+	return 0;
 }
 
 /*

@@ -1,3 +1,6 @@
+// Naveen Venkat
+// 2015A7PS0078P
+
 #ifndef __PARSER_H
 #define __PARSER_H
 
@@ -14,6 +17,7 @@ dt_set setDifference(dt_set s1, dt_set s2);
 
 // linked list functions
 dt_linkedListNode llMakeNode(void * data, int size);
+dt_linkedList llInit();
 void llFreeNode(dt_linkedListNode node);
 void llPushBack(dt_linkedList ll, void * data, int size);
 void llPushFront(dt_linkedList ll, void * data, int size);
@@ -21,7 +25,7 @@ void llPopFront(dt_linkedList ll);
 void llPopBack(dt_linkedList ll);
 
 // stack functions - stack is a linkedList with wrapper functions push and pop which use linkedList's pushFront and popFront
-void * stackInit();
+dt_linkedList stackInit();
 void * stackTopNode(dt_linkedList stack);
 void stackPush(dt_linkedList stack, void * data, int size); // assuming data is newly malloc'd
 void stackPop(dt_linkedList stack);
@@ -46,6 +50,6 @@ void printFirstFollowSets(firstAndFollow ffSets, grammar gr);
 parseTable ptInitEmptyTable(int rows, int cols);
 void createParseTable(firstAndFollow F, grammar gr, parseTable T);
 void printParseTable(parseTable T, grammar gr);
-parseTree parseInputSourceCode(char *testcaseFile, parseTable T);
+parseTree parseInputSourceCode(char *testcaseFile, parseTable T, grammar gr);
 
 #endif

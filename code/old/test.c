@@ -23,13 +23,13 @@ long long int findHash(char * lexeme, int x, int m)
 int main()
 {
 
-	char text[][40] = {"end", "int", "real", "string", "matrix", "if", "else", "endif", "read", "print"};
+	char text[][40] = {"end", "int", "real", "string", "matrix", "if", "else", "endif", "read", "print", "function"};
 
 	int i=0;
 
-	for(i=0; i<10; i++)
+	for(i=0; i<11; i++)
 	{
-		printf("%s = %lld\n", text[i], findHash(text[i], 3, 30));
+		printf("%s = %lld\n", text[i], findHash(text[i], 3, 39));
 	}
 
 	return 0;
