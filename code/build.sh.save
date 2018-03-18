@@ -1,5 +1,0 @@
-gcc -g lexer.c 
-gcc -g -c parser.c -o parser.o
-gcc -g -c driver.c -o driver.o
-gcc -o ncc -g lexer.o parser.o driver.o
-# gdb ./ncc
