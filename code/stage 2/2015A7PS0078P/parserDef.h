@@ -98,6 +98,10 @@ struct __PARSE_TREE_NODE
 	parseTreeNode prevSibling;
 	int numChildren;
 	parseTreeNode * children; // dynamic array of children
+
+	// for semantic analysis
+	// for AST
+	void * carry;
 };
 
 struct __PARSE_TREE

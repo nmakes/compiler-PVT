@@ -1108,6 +1108,12 @@ parseTree parseInputSourceCode(dt_str testCaseFileName, parseTable T, grammar gr
 					else
 					{
 						// expand
+						if(*A == TK_EXIT)
+						{
+							printf("%d: Syntax Error: Unexpected SEMICOLON at line %d after end\n", inputTOK->lineNo, inputTOK->lineNo);
+							return NULL;
+						}
+
 						rule = T[*A-ntBase][*a];
 
 						if(rule==-1)

@@ -365,6 +365,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 	// BASIC LOOP of the LEXER
 	while(shouldRun)
 	{
+
 		if(*(*buffer)=='\0') // if buffer is empty
 		{
 			// fill the buffer
@@ -376,6 +377,7 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 
 		// read input
 		input = *(*buffer);
+		// printf("ls:%d inp:%c\n", lastState, input);
 
 		if(input<=0 && fwd>0)
 		{
@@ -519,7 +521,15 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				{
 					if(input=='\n')
 					{
-						s = 3;
+						// s = 3;
+						// line_number++;
+
+						// transit back to state 1
+						s = 1;
+						fwd = 0;
+						memset(lexeme, 0, MAX_LEXEME_SIZE);
+						// comment is discarded automataically
+						lastState = s;
 						line_number++;
 					}
 					else
@@ -530,16 +540,16 @@ dt_token getNextToken(FILE * inputFile, dt_str * buffer, int * begin, int bufSiz
 				}
 				break;
 
-				case 3: // FINAL
-				{
-					// transit back to state 1
-					s = 1;
-					fwd = 0;
-					memset(lexeme, 0, MAX_LEXEME_SIZE);
-					// comment is discarded automataically
-					lastState = s;
-				}
-				break;
+				// case 3: // FINAL
+				// {
+				// 	// transit back to state 1
+				// 	s = 1;
+				// 	fwd = 0;
+				// 	memset(lexeme, 0, MAX_LEXEME_SIZE);
+				// 	// comment is discarded automataically
+				// 	lastState = s;
+				// }
+				// break;
 
 				case 15: // FINAL
 				{
