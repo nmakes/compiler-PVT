@@ -1,6 +1,0 @@
-_main[     ]
-	int x;
-	int y;
-	x = 20;
-	y = 20 * 4;
-end

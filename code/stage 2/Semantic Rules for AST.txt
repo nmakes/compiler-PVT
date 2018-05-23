@@ -1,0 +1,257 @@
+<mainFunction> ===> MAIN SQO SQC <stmtsAndFunctionDefs> END
+{free(MAIN)}, {free(SQO)}, {free(SQC)}, {free(END)}, {<mainFunction> = newnode("MAINFUNCTION", <stmtsAndFunctionDefs>.addr)}
+
+<stmtsAndFunctionDefs> ===> <stmtOrFunctionDef> <other1>
+{<stmtOrFunctionDef>.carry.link = <other1>.carry}, {<stmtsAndFunctionDefs> = newnode("SAFD", <stmtOrFunctionDef>.carry)}, {free(<other1>)}, {free(<stmtsAndFunctionDefs>)}	
+
+<other1> ===> _epsilon_
+{<other1>.carry=NULL}, {free(_epsilon_)}
+
+<other1> ===> <stmtOrFunctionDef> <other1>
+{<other1>_1.carry = <stmtOrFunctionDef>.carry}, {<stmtOrFunctionDef>.carry.link = <other1>_2.carry}, {free(<other1>_2)}, {free(<stmtOrFunctionDef>)}
+
+<stmtOrFunctionDef> ===> <stmt>
+{<stmtOrFunctionDef>.carry = <stmt>.carry}, {free(<stmt>)}
+
+<stmtOrFunctionDef> ===> <functionDef>
+{<stmtOrFunctionDef>.carry = <functionDef>.addr}
+
+<stmt> ===> <declarationStmt>
+{<stmt>.carry = <declarationStmt>.addr}
+
+<stmt> ===> <assignmentStmt_type1>
+{<stmt>.carry = <assignmentStmt_type1>.addr}
+
+<stmt> ===> <assignmentStmt_type2>
+{<stmt>.carry = <assignmentStmt_type2>.addr}
+
+<stmt> ===> <ifStmt>
+{<stmt>.carry = <ifStmt>.addr}
+
+<stmt> ===> <ioStmt>
+{<stmt>.carry = <ioStmt>.addr}
+
+<stmt> ===> <funCallStmt> SEMICOLON
+{<stmt>.carry = <funCallStmt>.addr}, {free(SEMICOLON)}
+
+<functionDef> ===> FUNCTION SQO <parameter_list> SQC ASSIGNOP FUNID SQO <parameter_list> SQC <stmtsAndFunctionDefs> END SEMICOLON
+{free(FUNCTION)}, {free(SQO_1)}, {free(SQC_1)}, {free(ASSIGNOP)}, {free(SQO_2)}, {free(SQC_2)}, {free(END)}, {free(SEMICOLON)}, {<functionDef> = newnode(<parameter_list>_1.addr, FUNID.addr, <parameter_list>_2.addr, <stmtsAndFunctionDefs>.addr)}
+
+<parameter_list> ===> <type> ID <remainingList>
+{<type>.link = ID.addr}, {ID.link = <remainingList>.carry}, {free(<remainingList>)}, {<parameter_list> = newnode("PL", <type>.addr)}
+
+<remainingList> ===> COMMA <type> ID <remainingList>
+{free(COMMA)}, {free(ID)}, {<type>.link = ID.addr}, {ID.link = <remainingList>_2.carry}, {<remainingList>_1.carry = <type>.addr}, {free(<remainingList>_2)}
+
+<remainingList> ===> _epsilon_
+{<remainingList>.carry = NULL}, {free(_epsilon_)}
+
+<type> ===> INT
+{<type>.carry = INT.addr}
+
+<type> ===> REAL
+{<type>.carry = REAL.addr}
+
+<type> ===> STRING
+{<type>.carry = STRING.addr}
+
+<type> ===> MATRIX
+{<type>.carry = MATRIX.addr}
+
+<declarationStmt> ===> <type> <var_list> SEMICOLON
+{free(SEMICOLON)}, {<declarationStmt> = newnode("DEC", <type>.carry, <var_list>.carry)}, {free(<var_list>)}, {free(<type>)}
+
+<var_list> ===> ID <more_ids>
+{ID.link = <more_ids>.carry}, {<var_list>.carry = ID.addr}, {free(<more_ids>)}
+
+<more_ids> ===> COMMA ID <more_ids>
+{ID.link = <more_ids>.carry}, {<more_ids>.carry = ID.addr}, {free(COMMA)}, {free(<more_ids>)}
+
+<more_ids> ===> _epsilon_
+{<more_ids>.carry = NULL}, {free(_epsilon_)}
+
+<assignmentStmt_type1> ===> <leftHandSide_singleVar> ASSIGNOP <rightHandSide_type1> SEMICOLON
+{free(SEMICOLON)}, {free(ASSIGNOP)}, {<assignmentStmt_type1> = newnode("=1", <leftHandSide_singleVar>.carry, <rightHandSide_type1>.carry)}, {free(<leftHandSide_singleVar>)}, {free(<rightHandSide_type1>)}
+
+<assignmentStmt_type2> ===> <leftHandSide_listVar> ASSIGNOP <rightHandSide_type2> SEMICOLON
+{free(SEMICOLON)}, {free(ASSIGNOP)}, {<assignmentStmt_type2> = newnode("=2", <leftHandSide_listVar>.carry, <rightHandSide_type2>.carry)}, {free(<leftHandSide_listVar>)}, {free(<rightHandSide_type2>)}
+
+<leftHandSide_singleVar> ===> ID
+{<leftHandSide_singleVar>.carry = ID.addr}
+
+<leftHandSide_listVar> ===> SQO <var_list> SQC
+{free(SQO)}, {free(SQC)}, {<leftHandSide_listVar>.carry = newnode(<var_list>.carry)}, {free(<var_list>)}
+
+<rightHandSide_type1> ===> <arithmeticExpression>
+{<rightHandSide_type1>.carry = <arithmeticExpression>.carry}, {free(<arithmeticExpression>)}
+
+<rightHandSide_type1> ===> <sizeExpression>
+{<rightHandSide_type1>.carry = <sizeExpression>.addr}
+
+<rightHandSide_type1> ===> <funCallStmt>
+{<rightHandSide_type1>.carry = <funCallStmt>.addr}
+
+<rightHandSide_type2> ===> <sizeExpression>
+{<rightHandSide_type2>.carry = <sizeExpression>.addr}
+
+<rightHandSide_type2> ===> <funCallStmt>
+{<rightHandSide_type2>.carry = <funCallStmt>.addr}
+
+<sizeExpression> ===> SIZE ID
+{free(SIZE)}, {<sizeExpression> = newnode("SIZE", ID.addr)}
+
+<ifStmt> ===> IF OP <booleanExpression> CL <stmt> <otherStmts> <other2>
+{free(IF)}, {free(OP)}, {free(CL)}, {<stmt>.link = <otherStmts>.carry}, {<ifStmt> = newnode("IF", <booleanExpression>.addr, <stmt>.carry, <other2>.carry)}, {free(<stmt>)}, {free(<other2>)}
+
+<other2> ===> ELSE <stmt> <otherStmts> ENDIF SEMICOLON
+{free(ELSE)}, {free(ENDIF)}, {free(SEMICOLON)}, {<stmt>.carry.link = <otherStmts>.carry}, {<other2>.carry = newnode("ELSE", <stmt>.carry)}, {free(<stmt>)}, {free(<otherStmts>)}
+
+<other2> ===> ENDIF SEMICOLON
+{<other2>.carry = NULL}, {free(ENDIF)}, {free(SEMICOLON)}
+
+<otherStmts> ===> <stmt> <otherStmts>
+{<otherStmts>_1.carry = <stmt>}, {<stmt>.link = <otherStmts>_2.carry}, {free(<otherStmts>_2)}
+
+<otherStmts> ===> _epsilon_
+{<otherStmts>.carry = NULL}
+
+<ioStmt> ===> READ OP ID CL SEMICOLON
+{free(READ)}, {free(OP)}, {free(CL)}, {free(SEMICOLON)}, {<ioStmt> = newnode("IO_READ", ID.addr)}
+
+<ioStmt> ===> PRINT OP ID CL SEMICOLON
+{free(PRINT)}, {free(OP)}, {free(CL)}, {free(SEMICOLON)}, {<ioStmt> = newnode("IO_PRINT", ID.addr)}
+
+<funCallStmt> ===> FUNID OP <inputParameterList> CL
+{free(OP)}, {free(CL)}, {<funCallStmt> = newnode("CALL", FUNID.addr, <inputParameterList>.addr)
+
+<inputParameterList> ===> <var> <listVar>
+{<var>.carry.link = <listVar>.carry}, {free(<var>)}, {free(<listVar>)}
+
+<inputParameterList> ===> _epsilon_
+{<inputParameterList>.carry = NULL}, {free(_epsilon_)}
+
+<listVar> ===> _epsilon_
+{<listVar>.carry = NULL}, {free(_epsilon_)}
+
+<listVar> ===> COMMA <var> <listVar>
+{free(COMMA)}, {<var>.carry.link = <listVar>_2.carry}, {free(<listVar>_2)}, {free(<var>)}
+
+<arithmeticExpression> ===> <arithmeticTerm> <other3>
+{<other3>.inh = <arithmeticTerm>.carry}, {<arithmeticTerm>.carry = <other3>.carry}, {free(<other3>)}
+
+<other3> ===> <operator_lowPrecedence> <arithmeticTerm> <other3>
+{<other3>_2.inh = <arithmeticTerm>.carry}, {<other3>_1.carry = newnode(<operator_lowPrecedence>.symbol, <other3>_1.inh, <arithmeticTerm>.carry)}, {free(<other3>_2)}, {free(<operator_lowPrecedence>)}, {free(<arithmeticTerm>)}
+
+<other3> ===> _epsilon_
+{<other3>.carry = <other3>.inh}, {free(_epsilon_)}
+
+<arithmeticTerm> ===> <factor> <other4>
+{<other4>.inh = <factor>.carry}, {<arithmeticTerm>.carry = <other4>.carry}, {free(<other4>)}
+
+<other4> ===> <operator_highPrecedence> <factor> <other4>
+{<other4>_2.inh = <factor>.carry}, {<other4>_1.carry = newnode(<operator_highPrecedence>.symbol, <other4>_1.inh, <factor>.carry)}, {free(<other4>_2)}, {free(<operator_highPrecedence>)}, {free(<factor>)}
+
+<other4> ===> _epsilon_
+{<other4>.carry = <other4>.inh}, {free(_epsilon_)}
+
+<factor> ===> OP <arithmeticExpression> CL
+{free(OP)}, {free(CL)}, {<factor>.carry = <arithmeticExpression>.carry}, {free(<arithmeticExpression>)}
+
+<factor> ===> <var>
+{<factor>.carry = <var>.carry}, {free(<var>)}
+
+<operator_lowPrecedence> ===> PLUS
+{<operator_lowPrecedence>.carry = PLUS.addr}
+
+<operator_lowPrecedence> ===> MINUS
+{<operator_lowPrecedence>.carry = MINUS.addr}
+
+<operator_highPrecedence> ===> MUL
+{<operator_highPrecedence>.carry = MUL.addr}
+
+<operator_highPrecedence> ===> DIV
+{<operator_highPrecedence>.carry = DIV.addr}
+
+<booleanExpression> ===> OP <booleanExpression> CL <logicalOp> OP <booleanExpression> CL
+{free(OP_1)}, {free(CL_1)}, {free(OP_2)}, {free(CL_2)}, {<booleanExpression>_1 = newnode(<logicalOp>.carry.symbol, <booleanExpression>_2, <booleanExpression>_3)}
+
+<booleanExpression> ===> <constrainedVars> <relationalOp> <constrainedVars>
+{<booleanExpression> = newnode(<relationalOp>.carry.symbol, <constrinedVars>_1.carry, <constrinedVars>_2.carry)}, {free(<constrainedVars>_1)}, {free(<constrainedVars>_2)}
+
+<booleanExpression> ===> NOT OP <booleanExpression> CL
+{free(NOT)}, {free(OP)}, {free(CL)}, {<booleanExpression>_1 = newnode("NOT", <booleanExpression>_2)}
+
+<constrainedVars> ===> ID
+{<constrinedVars>.carry = ID.addr}
+
+<constrainedVars> ===> NUM
+{<constrinedVars>.carry = NUM.addr}
+
+<constrainedVars> ===> RNUM
+{<constrinedVars>.carry = RNUM.addr}
+
+<var> ===> ID <matrixElementExtension>
+{ID.link = <matrixElementExtension>.carry}, {<var>.carry = ID}, {free(<matrixElementExtension>)}
+
+<var> ===> NUM
+{<var>.carry = NUM.addr}
+
+<var> ===> RNUM
+{<var>.carry = RNUM.addr}
+
+<var> ===> STR
+{<var>.carry = STR.addr}
+
+<var> ===> <matrix>
+{<var>.carry = <matrix>.addr}
+
+<matrix> ===> SQO <rows> SQC
+{free(SQO)}, {free(SQC)}, {<matrix> = newnode("MATRIX", <rows>.carry)}, {free(<rows>)}
+
+<rows> ===> <row> <other5>
+{<row>.link = <other5>.carry}, {<rows>.carry = <row>.addr}, {free(<other5>)}
+
+<other5> ===> SEMICOLON <row> <other5>
+{<row>.link = <other5>_2.carry}, {free(<other5>_2)}, {free(SEMICOLON)}, {<other5>_1.carry = <row>.addr}
+
+<other5> ===> _epsilon_
+{<other5>.carry = NULL}, {free(_epsilon_)}
+
+<row> ===> NUM <remainingColElements>
+{NUM.link = <remainingColElements>.carry}, {free(<remainingColElements>)}
+
+<remainingColElements> ===> COMMA NUM <remainingColElements>
+{free(COMMA)}, {<remainingColElements>_1.carry = NUM.addr}, {NUM.link = <remainingColElements>_2.carry}, {free(<remainingColElements>_2)}
+
+<remainingColElements> ===> _epsilon_
+{<remainingColElements>.carry = NULL}, {free(_epsilon_)}
+
+<matrixElementExtension> ===> SQO NUM COMMA NUM SQC
+{free(SQO)}, {free(COMMA)}, {free(SQC)}, {<matrixElemenetExtension>.carry = newnode("indices", NUM_1.addr, NUM_2.addr)}
+
+<matrixElementExtension> ===> _epsilon_
+{<matrixElementExtension>.carry = NULL}, {free(_epsilon_)}
+
+<logicalOp> ===> AND
+{<logicalOp>.carry = AND.addr}
+
+<logicalOp> ===> OR
+{<logicalOp>.carry = OR.addr}
+
+<relationalOp> ===> LT
+{<relationalOp>.carry = LT.addr}
+
+<relationalOp> ===> LE
+{<relationalOp>.carry = LE.addr}
+
+<relationalOp> ===> EQ
+{<relationalOp>.carry = EQ.addr}
+
+<relationalOp> ===> GT
+{<relationalOp>.carry = GT.addr}
+
+<relationalOp> ===> GE
+{<relationalOp>.carry = GE.addr}
+
+<relationalOp> ===> NE
+{<relationalOp>.carry = NE.addr}
